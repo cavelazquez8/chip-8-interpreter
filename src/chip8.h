@@ -3,10 +3,14 @@
 
 #include <cstdint>
 
-class CHIP8 {
+class Chip8 {
 public:
-  std::uint8_t frameBuffer[64][32];
-  std::uint8_t keyboard[4][4];
+  Chip8();
+
+  std::uint8_t frameBuffer[2048];
+  std::uint8_t keyboard[16];
+
+  void init();
 
 private:
   std::uint8_t memory[4096];
@@ -22,6 +26,6 @@ private:
 
   std::uint16_t programCounter;
 
-  std::uint16_t opcodes;
+  std::uint16_t opcode;
 };
 #endif
