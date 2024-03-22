@@ -21,6 +21,8 @@ std::uint8_t fonts[80] = {
     0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 };
 
+Chip8::Chip8() { init(); }
+
 void Chip8::init() {
   programCounter = 0x200;
   opcode = 0;
