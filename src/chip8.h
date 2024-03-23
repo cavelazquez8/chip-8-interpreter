@@ -7,10 +7,11 @@ class Chip8 {
 public:
   Chip8();
 
-  std::uint8_t frameBuffer[2048];
+  std::uint8_t frameBuffer[64 * 32];
   std::uint8_t keyboard[16];
 
   void init();
+  void emulateCycle();
 
 private:
   std::uint8_t memory[4096];

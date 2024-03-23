@@ -7,8 +7,6 @@
 
 int main(int arc, char **argv) {
 
-  std::cout << "hello" << std::endl;
-
   int w = 1024;
   int h = 512;
 
@@ -26,6 +24,12 @@ int main(int arc, char **argv) {
     printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
     exit(2);
   }
+
+  Chip8 chip8;
+
+  SDL_Renderer *renderer =
+      SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  // Set some test pixels in the frame buffer
 
   return 0;
 }
