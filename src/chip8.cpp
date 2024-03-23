@@ -1,6 +1,7 @@
 #include "chip8.h"
 
 #include <cstdint>
+#include <stdio.h>
 
 std::uint8_t fonts[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -50,4 +51,24 @@ void Chip8::init() {
 
   delayTimer = 0;
   soundTimer = 0;
+}
+
+void Chip8::emulateCycle() {
+  // Fetch Opcode
+  opcode = memory[programCounter] << 8 | memory[programCounter + 1];
+  // Decode Opcode
+
+  switch (opcode & 0xF000) {
+
+  default:
+    printf("Unknown Opcode: %X", opcode);
+  }
+
+  if (delayTimer > 0) {
+    --delayTimer;
+  }
+  if (soundTimer > 0) {
+    // Beep
+    --soundTimer;
+  }
 }
