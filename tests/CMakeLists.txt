@@ -16,14 +16,17 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+set(test-sources
+  opcodes_test.cpp
+  )
 add_executable(
-  chip8_tests
-  ex1.cpp
+  tests
+  ${test-sources}
 )
 target_link_libraries(
-  chip8_tests
+  tests
   GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(hello_test)
+gtest_discover_tests(tests)
