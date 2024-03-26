@@ -1,12 +1,16 @@
 #include "chip8.h"
 
 #include <cstdint>
+#include <stdexcept>
 #include <stdio.h>
+
+// Getters
+std::uint16_t Chip8::getIndexRegister() { return indexRegister; }
 
 std::uint8_t fonts[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+    0xF,  0x10, 0xF0, 0x80, 0xF0, // 2
     0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
     0x90, 0x90, 0xF0, 0x10, 0x10, // 4
     0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
@@ -60,6 +64,11 @@ void Chip8::emulateCycle() {
 
   switch (opcode & 0xF000) {
 
+  case 0xA000: // ANNN: Sets I to the address NNN
+    indexRegister = opcode & 0x0FFF;
+    programCounter += 2;
+    break;
+
   default:
     printf("Unknown Opcode: %X", opcode);
   }
@@ -71,4 +80,11 @@ void Chip8::emulateCycle() {
     // Beep
     --soundTimer;
   }
+}
+
+void Chip8::setMem(std::uint16_t address, std::uint8_t value) {
+  if (address < 0 || address >= 4096) {
+    throw std::out_of_range("Address is out of bounds");
+  }
+  memory[address] = value;
 }
