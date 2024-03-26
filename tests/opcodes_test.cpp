@@ -4,7 +4,7 @@
 
 namespace {
 
-TEST(OpcodesTest, ANNN) {
+TEST(OpcodesTest, ValidANNN) {
 
   Chip8 chip8;
 

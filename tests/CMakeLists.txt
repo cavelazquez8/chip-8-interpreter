@@ -18,6 +18,7 @@ enable_testing()
 
 set(test-sources
   opcodes_test.cpp
+  ../src/chip8.cpp
   )
 add_executable(
   tests
