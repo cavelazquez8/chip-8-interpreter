@@ -12,6 +12,8 @@ public:
 
   void init();
   void emulateCycle();
+  void setMem(std::uint16_t address, std::uint8_t value);
+  std::uint16_t getIndexRegister();
 
 private:
   std::uint8_t memory[4096];
