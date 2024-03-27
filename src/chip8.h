@@ -12,8 +12,17 @@ public:
 
   void init();
   void emulateCycle();
-  void setMem(std::uint16_t address, std::uint8_t value);
+
+  // Setters
+  void setMemory(std::uint16_t address, std::uint8_t value);
+  void setProgramCounter(std::uint16_t address);
+  void setStack(std::uint8_t subroutine, std::uint16_t address);
+  void setStackPointer(std::uint8_t subroutine);
+
+  // Getters
   std::uint16_t getIndexRegister();
+  std::uint8_t getStackPointer();
+  std::uint16_t getProgramCounter();
 
 private:
   std::uint8_t memory[4096];
