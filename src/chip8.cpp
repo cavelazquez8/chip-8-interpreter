@@ -1,11 +1,7 @@
 #include "chip8.h"
 
 #include <cstdint>
-#include <stdexcept>
 #include <stdio.h>
-
-// Getters
-std::uint16_t Chip8::getIndexRegister() { return indexRegister; }
 
 std::uint8_t fonts[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -64,6 +60,23 @@ void Chip8::emulateCycle() {
 
   switch (opcode & 0xF000) {
 
+  case 0x0000:
+    switch (opcode & 0x000F) {
+    case 0x0000: // Clears the screen
+
+      break;
+
+    case 0x000E: // Returns from a subroutine
+      stackPointer--;
+      programCounter = stack[stackPointer];
+      programCounter += 2;
+      break;
+
+    default:
+      printf("Unknown Opcode: %X", opcode);
+    }
+    break;
+
   case 0xA000: // ANNN: Sets I to the address NNN
     indexRegister = opcode & 0x0FFF;
     programCounter += 2;
@@ -82,9 +95,21 @@ void Chip8::emulateCycle() {
   }
 }
 
-void Chip8::setMem(std::uint16_t address, std::uint8_t value) {
-  if (address < 0 || address >= 4096) {
-    throw std::out_of_range("Address is out of bounds");
-  }
+// Setters
+void Chip8::setMemory(std::uint16_t address, std::uint8_t value) {
   memory[address] = value;
 }
+void Chip8::setProgramCounter(std::uint16_t address) {
+  programCounter = address;
+}
+void Chip8::setStack(std::uint8_t subroutine, std::uint16_t address) {
+  stack[subroutine] = address;
+}
+void Chip8::setStackPointer(std::uint8_t subroutine) {
+  stackPointer = subroutine;
+}
+
+// Getters
+std::uint16_t Chip8::getIndexRegister() { return indexRegister; }
+std::uint8_t Chip8::getStackPointer() { return stackPointer; }
+std::uint16_t Chip8::getProgramCounter() { return programCounter; }
