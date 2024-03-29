@@ -23,6 +23,7 @@ public:
   std::uint16_t getIndexRegister();
   std::uint8_t getStackPointer();
   std::uint16_t getProgramCounter();
+  bool getDrawFlag();
 
 private:
   std::uint8_t memory[4096];
@@ -39,5 +40,7 @@ private:
   std::uint16_t programCounter;
 
   std::uint16_t opcode;
+
+  bool drawFlag;
 };
 #endif
