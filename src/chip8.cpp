@@ -64,6 +64,14 @@ void Chip8::emulateCycle() {
     switch (opcode & 0x000F) {
     case 0x0000: // Clears the screen
 
+      for (int i = 0; i < 64 * 32; ++i) {
+        frameBuffer[i] = 0;
+      }
+
+      drawFlag = true;
+
+      programCounter += 2;
+
       break;
 
     case 0x000E: // Returns from a subroutine
@@ -113,3 +121,5 @@ void Chip8::setStackPointer(std::uint8_t subroutine) {
 std::uint16_t Chip8::getIndexRegister() { return indexRegister; }
 std::uint8_t Chip8::getStackPointer() { return stackPointer; }
 std::uint16_t Chip8::getProgramCounter() { return programCounter; }
+
+bool Chip8::getDrawFlag() { return drawFlag; }
