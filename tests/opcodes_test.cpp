@@ -31,4 +31,25 @@ TEST(_00EETest, Valid) {
   EXPECT_EQ(chip8.getStackPointer(), 1);
 }
 
+TEST(_00E0Test, Valid) {
+  Chip8 chip8;
+
+  for (int i = 0; i < 64 * 32; ++i) {
+    chip8.frameBuffer[i] = 0;
+  }
+
+  chip8.setMemory(0x200, 0x00);
+  chip8.setMemory(0x201, 0xE0);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getDrawFlag(), true);
+
+  for (int i = 0; i < 64 * 32; ++i) {
+    EXPECT_EQ(chip8.frameBuffer[i], 0);
+  }
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
+
 } // namespace
