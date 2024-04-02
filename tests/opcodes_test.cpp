@@ -4,18 +4,6 @@
 
 namespace {
 
-TEST(ANNNTest, Valid) {
-
-  Chip8 chip8;
-
-  chip8.setMemory(0x200, 0xA0);
-  chip8.setMemory(0x201, 0x01);
-
-  chip8.emulateCycle();
-
-  EXPECT_EQ(chip8.getIndexRegister(), 0x0001);
-}
-
 TEST(_00EETest, Valid) {
   Chip8 chip8;
 
@@ -50,6 +38,39 @@ TEST(_00E0Test, Valid) {
   }
 
   EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
+
+TEST(_1NNNTest, Valid) {
+  Chip8 chip8;
+
+  chip8.setMemory(0x200, 0x10);
+  chip8.setMemory(0x201, 0x01);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x001);
+}
+TEST(_2NNN, Valid) {
+  Chip8 chip8;
+
+  chip8.setMemory(0x200, 0x20);
+  chip8.setMemory(0x201, 0x01);
+
+  chip8.emulateCycle();
+  EXPECT_EQ(chip8.getStackAt(0), 0x200);
+  EXPECT_EQ(chip8.getStackPointer(), 1);
+  EXPECT_EQ(chip8.getProgramCounter(), 0x001);
+}
+TEST(ANNNTest, Valid) {
+
+  Chip8 chip8;
+
+  chip8.setMemory(0x200, 0xA0);
+  chip8.setMemory(0x201, 0x01);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getIndexRegister(), 0x0001);
 }
 
 } // namespace
