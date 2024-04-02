@@ -85,6 +85,14 @@ void Chip8::emulateCycle() {
     }
     break;
 
+  case 0x1000:
+    programCounter = opcode & 0x0FFF;
+    break;
+  case 0x2000:
+    stack[stackPointer] = programCounter;
+    stackPointer++;
+    programCounter = opcode & 0x0FFF;
+    break;
   case 0xA000: // ANNN: Sets I to the address NNN
     indexRegister = opcode & 0x0FFF;
     programCounter += 2;
@@ -121,5 +129,8 @@ void Chip8::setStackPointer(std::uint8_t subroutine) {
 std::uint16_t Chip8::getIndexRegister() { return indexRegister; }
 std::uint8_t Chip8::getStackPointer() { return stackPointer; }
 std::uint16_t Chip8::getProgramCounter() { return programCounter; }
+std::uint16_t Chip8::getStackAt(std::uint8_t subroutine) {
+  return stack[subroutine];
+}
 
 bool Chip8::getDrawFlag() { return drawFlag; }

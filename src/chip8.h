@@ -22,6 +22,7 @@ public:
   // Getters
   std::uint16_t getIndexRegister();
   std::uint8_t getStackPointer();
+  std::uint16_t getStackAt(std::uint8_t subroutine);
   std::uint16_t getProgramCounter();
   bool getDrawFlag();
 
