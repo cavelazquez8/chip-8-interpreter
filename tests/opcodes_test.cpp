@@ -61,6 +61,44 @@ TEST(_2NNN, Valid) {
   EXPECT_EQ(chip8.getStackPointer(), 1);
   EXPECT_EQ(chip8.getProgramCounter(), 0x001);
 }
+
+TEST(_3NNNTest, Valid) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x01);
+
+  chip8.setMemory(0x200, 0x30);
+  chip8.setMemory(0x201, 0x01);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x204);
+}
+TEST(_4NNNTest, Valid) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x01);
+
+  chip8.setMemory(0x200, 0x40);
+  chip8.setMemory(0x201, 0x02);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x204);
+}
+TEST(_5NNNTest, Valid) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x01);
+  chip8.setRegisterAt(1, 0x01);
+
+  chip8.setMemory(0x200, 0x50);
+  chip8.setMemory(0x201, 0x10);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x204);
+}
 TEST(ANNNTest, Valid) {
 
   Chip8 chip8;
