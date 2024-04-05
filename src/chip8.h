@@ -25,6 +25,7 @@ public:
   std::uint8_t getStackPointer();
   std::uint16_t getStackAt(std::uint8_t subroutine);
   std::uint16_t getProgramCounter();
+  std::uint8_t getRegisterAt(std::uint8_t reg);
   bool getDrawFlag();
 
 private:
