@@ -50,6 +50,7 @@ TEST(_1NNNTest, Valid) {
 
   EXPECT_EQ(chip8.getProgramCounter(), 0x001);
 }
+
 TEST(_2NNN, Valid) {
   Chip8 chip8;
 
@@ -74,6 +75,7 @@ TEST(_3NNNTest, Valid) {
 
   EXPECT_EQ(chip8.getProgramCounter(), 0x204);
 }
+
 TEST(_4NNNTest, Valid) {
   Chip8 chip8;
 
@@ -86,6 +88,7 @@ TEST(_4NNNTest, Valid) {
 
   EXPECT_EQ(chip8.getProgramCounter(), 0x204);
 }
+
 TEST(_5NNNTest, Valid) {
   Chip8 chip8;
 
@@ -99,6 +102,18 @@ TEST(_5NNNTest, Valid) {
 
   EXPECT_EQ(chip8.getProgramCounter(), 0x204);
 }
+
+TEST(_6XNNTest, Valid) {
+  Chip8 chip8;
+
+  chip8.setMemory(0x200, 0x60);
+  chip8.setMemory(0x201, 0x10);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getRegisterAt(0), 0x10);
+}
+
 TEST(ANNNTest, Valid) {
 
   Chip8 chip8;
