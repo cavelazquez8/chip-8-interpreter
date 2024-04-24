@@ -175,6 +175,30 @@ TEST(_8XY3Test, Valid) {
 
   EXPECT_EQ(chip8.getRegisterAt(0), 0x03);
 }
+TEST(_8XY4Test, Valid) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x01);
+  chip8.setRegisterAt(1, 0x02);
+  chip8.setMemory(0x200, 0x80);
+  chip8.setMemory(0x201, 0x14);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getRegisterAt(0), 0x03);
+}
+TEST(_8XY5Test, Valid) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x02);
+  chip8.setRegisterAt(1, 0x01);
+  chip8.setMemory(0x200, 0x80);
+  chip8.setMemory(0x201, 0x15);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getRegisterAt(0), 0x01);
+}
 TEST(ANNNTest, Valid) {
 
   Chip8 chip8;
