@@ -129,6 +129,15 @@ void Chip8::emulateCycle() {
 
     programCounter += 2;
   } break;
+  case 0x7000: {
+    std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+    std::uint8_t NN = (opcode & 0x00FF);
+
+    registers[Vx] += NN;
+
+    programCounter += 2;
+
+  } break;
   case 0xA000: // ANNN: Sets I to the address NNN
     indexRegister = opcode & 0x0FFF;
     programCounter += 2;
