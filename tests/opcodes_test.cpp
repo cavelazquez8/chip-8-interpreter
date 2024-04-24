@@ -126,6 +126,18 @@ TEST(_7XNNTest, Valid) {
   EXPECT_EQ(chip8.getRegisterAt(0), 0x19);
 }
 
+TEST(_8XY0Test, Valid) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x01);
+  chip8.setRegisterAt(1, 0x02);
+  chip8.setMemory(0x200, 0x80);
+  chip8.setMemory(0x201, 0x10);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getRegisterAt(0), 0x02);
+}
 TEST(ANNNTest, Valid) {
 
   Chip8 chip8;
