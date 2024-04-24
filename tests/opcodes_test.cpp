@@ -117,13 +117,13 @@ TEST(_6XNNTest, Valid) {
 TEST(_7XNNTest, Valid) {
   Chip8 chip8;
 
-  chip8.setRegisterAt(0, 0x01);
-  chip8.setMemory(0x200, 0x00);
-  chip8.setMemory(0x201, 0x01);
+  chip8.setRegisterAt(0, 0x09);
+  chip8.setMemory(0x200, 0x70);
+  chip8.setMemory(0x201, 0x10);
 
   chip8.emulateCycle();
 
-  EXPECT_EQ(chip8.getRegisterAt(0), 0x02);
+  EXPECT_EQ(chip8.getRegisterAt(0), 0x19);
 }
 
 TEST(ANNNTest, Valid) {
