@@ -228,7 +228,7 @@ TEST(_8XY6Test, LeastSigBit_1) {
   Chip8 chip8;
 
   chip8.setRegisterAt(0, 0x01);
-  chip8.setRegisterAt(1, 0x00);
+
   chip8.setMemory(0x200, 0x80);
   chip8.setMemory(0x201, 0x16);
 
@@ -240,7 +240,7 @@ TEST(_8XY6Test, LeastSigBit_0) {
   Chip8 chip8;
 
   chip8.setRegisterAt(0, 0x00);
-  chip8.setRegisterAt(1, 0x00);
+
   chip8.setMemory(0x200, 0x80);
   chip8.setMemory(0x201, 0x16);
 
