@@ -272,6 +272,30 @@ TEST(_8XY7Test, NoUnderflow) {
 
   EXPECT_EQ(chip8.getRegisterAt(0xF), 1);
 }
+TEST(_8XYETest, MostSigBit_1) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0xF0);
+
+  chip8.setMemory(0x200, 0x80);
+  chip8.setMemory(0x201, 0x1E);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getRegisterAt(0xF), 1);
+}
+TEST(_8XYETest, MostSigBit_0) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x00);
+
+  chip8.setMemory(0x200, 0x80);
+  chip8.setMemory(0x201, 0x1E);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getRegisterAt(0xF), 0);
+}
 TEST(ANNNTest, Valid) {
 
   Chip8 chip8;
