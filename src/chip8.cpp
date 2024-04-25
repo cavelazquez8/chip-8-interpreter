@@ -203,7 +203,19 @@ void Chip8::emulateCycle() {
       } else {
         registers[0xF] = 1;
       }
+
       registers[Vx] -= registers[Vy];
+
+      programCounter += 2;
+    } break;
+    case 0x0006: {
+
+      std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+      std::uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+      registers[0xF] = registers[Vx] & 1;
+
+      registers[Vx] >>= 1;
 
       programCounter += 2;
     } break;
