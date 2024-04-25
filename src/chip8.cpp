@@ -198,6 +198,11 @@ void Chip8::emulateCycle() {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
 
+      if (registers[Vx] < registers[Vy]) {
+        registers[0xF] = 0;
+      } else {
+        registers[0xF] = 1;
+      }
       registers[Vx] -= registers[Vy];
 
       programCounter += 2;
