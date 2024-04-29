@@ -296,6 +296,19 @@ TEST(_8XYETest, MostSigBit_0) {
 
   EXPECT_EQ(chip8.getRegisterAt(0xF), 0);
 }
+TEST(_9XY0Test, Valid) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x01);
+  chip8.setRegisterAt(1, 0x02);
+
+  chip8.setMemory(0x200, 0x90);
+  chip8.setMemory(0x201, 0x10);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x204);
+}
 TEST(ANNNTest, Valid) {
 
   Chip8 chip8;

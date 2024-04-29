@@ -249,6 +249,16 @@ void Chip8::emulateCycle() {
     default:
       printf("Unknown Opcode: %X", opcode);
     }
+  case 0x9000: {
+    std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+    std::uint8_t Vy = (opcode & 0x00F0) >> 4;
+
+    if (registers[Vx] != registers[Vy]) {
+      programCounter += 4;
+    } else {
+      programCounter += 2;
+    }
+  } break;
 
   case 0xA000: // ANNN: Sets I to the address NNN
     indexRegister = opcode & 0x0FFF;
