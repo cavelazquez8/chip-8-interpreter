@@ -1,5 +1,6 @@
 #include "chip8.h"
 
+#include "random.h"
 #include <cstdint>
 #include <stdio.h>
 
@@ -268,6 +269,16 @@ void Chip8::emulateCycle() {
   case 0xB000:
     programCounter = registers[0] + (opcode & 0x0FFF);
     break;
+  case 0xC000: {
+    std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+    std::uint8_t NN = opcode & 0x00FF;
+    std::uint8_t randNum = Random::get<uint8_t>(0, 255);
+
+    registers[Vx] = randNum & NN;
+
+    programCounter += 2;
+    break;
+  }
 
   default:
     printf("Unknown Opcode: %X", opcode);
