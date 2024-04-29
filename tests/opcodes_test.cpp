@@ -321,4 +321,17 @@ TEST(ANNNTest, Valid) {
   EXPECT_EQ(chip8.getIndexRegister(), 0x0001);
 }
 
+TEST(BNNNTest, Valid) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x01);
+
+  chip8.setMemory(0x200, 0xB2);
+  chip8.setMemory(0x201, 0x05);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x206);
+}
+
 } // namespace
