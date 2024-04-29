@@ -265,6 +265,10 @@ void Chip8::emulateCycle() {
     programCounter += 2;
     break;
 
+  case 0xB000:
+    programCounter = registers[0] + (opcode & 0x0FFF);
+    break;
+
   default:
     printf("Unknown Opcode: %X", opcode);
   }
