@@ -26,7 +26,7 @@ inline std::mt19937 generate() {
 inline std::mt19937 mt{generate()};
 
 inline int get(int min, int max) {
-  return std::uniform_int_distribution{min, max}(mt);
+  return std::uniform_int_distribution<int>{min, max}(mt);
 }
 
 template <typename T> T get(T min, T max) {
@@ -36,6 +36,7 @@ template <typename T> T get(T min, T max) {
 template <typename R, typename S, typename T> R get(S min, T max) {
   return get<R>(static_cast<R>(min), static_cast<R>(max));
 }
+
 } // namespace Random
 
 #endif

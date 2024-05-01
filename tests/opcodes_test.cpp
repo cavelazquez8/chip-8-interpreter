@@ -333,5 +333,17 @@ TEST(BNNNTest, Valid) {
 
   EXPECT_EQ(chip8.getProgramCounter(), 0x206);
 }
+TEST(CXNNTest, Valid) {
+  Chip8 chip8;
 
+  chip8.setMemory(0x200, 0xC0);
+  chip8.setMemory(0x201, 0xFF);
+
+  chip8.emulateCycle();
+
+  std::uint8_t Vx = chip8.getRegisterAt(0);
+  EXPECT_GE(Vx, 0);
+  EXPECT_LE(Vx, 0xFF);
+  EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
 } // namespace
