@@ -27,6 +27,7 @@ public:
   std::uint16_t getProgramCounter();
   std::uint8_t getRegisterAt(std::uint8_t reg);
   bool getDrawFlag();
+  std::uint8_t getDelayTimer();
 
 private:
   std::uint8_t memory[4096];
