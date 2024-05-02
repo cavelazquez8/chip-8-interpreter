@@ -333,6 +333,16 @@ void Chip8::emulateCycle() {
       printf("Unknown Opcode: %X", opcode);
       break;
     }
+  case 0xF000:
+    switch (opcode & 0x00FF) {
+
+    case 0x0007: {
+
+      std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+      registers[Vx] = delayTimer;
+      programCounter += 2;
+    } break;
     default:
       printf("Unknown Opcode: %X", opcode);
       break;
@@ -366,6 +376,7 @@ void Chip8::setStackPointer(std::uint8_t subroutine) {
 void Chip8::setRegisterAt(std::uint8_t reg, std::uint8_t value) {
   registers[reg] = value;
 }
+void Chip8::setDelayTimer(std::uint8_t value) { delayTimer = value; }
 
 // Getters
 std::uint16_t Chip8::getIndexRegister() { return indexRegister; }

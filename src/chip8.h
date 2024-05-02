@@ -19,7 +19,7 @@ public:
   void setStack(std::uint8_t subroutine, std::uint16_t address);
   void setStackPointer(std::uint8_t subroutine);
   void setRegisterAt(std::uint8_t reg, std::uint8_t value);
-
+  void setDelayTimer(std::uint8_t value);
   // Getters
   std::uint16_t getIndexRegister();
   std::uint8_t getStackPointer();
