@@ -151,6 +151,7 @@ TEST(_8XY1Test, Valid) {
 
   EXPECT_EQ(chip8.getRegisterAt(0), 0x03);
 }
+
 TEST(_8XY2Test, Valid) {
   Chip8 chip8;
 
@@ -480,4 +481,19 @@ TEST(FX18, setSoundTimer) {
   EXPECT_EQ(chip8.getSoundTimer(), 1);
   EXPECT_EQ(chip8.getProgramCounter(), 0x202);
 }
+
+TEST(FX1E, setSoundTimer) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 2);
+
+  chip8.setMemory(0x200, 0xF0);
+  chip8.setMemory(0x201, 0x1E);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getIndexRegister(), 2);
+  EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
+
 } // namespace

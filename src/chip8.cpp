@@ -379,6 +379,14 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
+    case 0x001E: {
+
+      std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+      indexRegister += registers[Vx];
+
+      programCounter += 2;
+    }
     default:
       printf("Unknown Opcode: %X", opcode);
       break;
