@@ -396,4 +396,25 @@ TEST(EX9E, DontSkipNextInstruction) {
 
   EXPECT_EQ(chip8.getProgramCounter(), 0x202);
 }
+TEST(EXA1, SkipNextInstruction) {
+  Chip8 chip8;
+
+  chip8.setMemory(0x200, 0xE0);
+  chip8.setMemory(0x201, 0xA1);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x204);
+}
+TEST(EXA1, DontSkipNextInstruction) {
+  Chip8 chip8;
+
+  chip8.keyboard[0] = 1;
+  chip8.setMemory(0x200, 0xE0);
+  chip8.setMemory(0x201, 0xA1);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
 } // namespace

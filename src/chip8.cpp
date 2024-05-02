@@ -319,6 +319,20 @@ void Chip8::emulateCycle() {
       }
     } break;
 
+    case 0x0001: {
+
+      std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+      if (keyboard[Vx] == 0) {
+        programCounter += 4;
+      } else {
+        programCounter += 2;
+      }
+    } break;
+    default:
+      printf("Unknown Opcode: %X", opcode);
+      break;
+    }
     default:
       printf("Unknown Opcode: %X", opcode);
       break;
