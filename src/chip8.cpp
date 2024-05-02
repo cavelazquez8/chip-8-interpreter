@@ -283,7 +283,6 @@ void Chip8::emulateCycle() {
     std::uint8_t Vx = (opcode & 0x0F00) >> 8;
     std::uint8_t Vy = (opcode & 0x00F0) >> 4;
     std::uint8_t N = opcode & 0x000F;
-
     std::uint8_t pixel{};
 
     registers[0xF] = 0;
@@ -308,6 +307,22 @@ void Chip8::emulateCycle() {
 
   } break;
 
+  case 0xE000:
+    switch (opcode & 0x000F) {
+    case 0x000E: {
+      std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+      if (keyboard[Vx] != 0) {
+        programCounter += 4;
+      } else {
+        programCounter += 2;
+      }
+    } break;
+
+    default:
+      printf("Unknown Opcode: %X", opcode);
+      break;
+    }
   default:
     printf("Unknown Opcode: %X", opcode);
   }
