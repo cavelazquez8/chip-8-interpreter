@@ -28,6 +28,7 @@ public:
   std::uint8_t getRegisterAt(std::uint8_t reg);
   bool getDrawFlag();
   std::uint8_t getDelayTimer();
+  std::uint8_t getSoundTimer();
 
 private:
   std::uint8_t memory[4096];

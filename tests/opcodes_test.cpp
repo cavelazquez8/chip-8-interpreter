@@ -467,5 +467,17 @@ TEST(FX15, setDelayTimer) {
   EXPECT_EQ(chip8.getDelayTimer(), 1);
   EXPECT_EQ(chip8.getProgramCounter(), 0x202);
 }
+TEST(FX18, setSoundTimer) {
+  Chip8 chip8;
 
+  chip8.setRegisterAt(0, 2);
+
+  chip8.setMemory(0x200, 0xF0);
+  chip8.setMemory(0x201, 0x18);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getSoundTimer(), 1);
+  EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
 } // namespace
