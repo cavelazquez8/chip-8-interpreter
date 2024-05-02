@@ -410,6 +410,7 @@ TEST(EXA1, DontSkipNextInstruction) {
   Chip8 chip8;
 
   chip8.keyboard[0] = 1;
+
   chip8.setMemory(0x200, 0xE0);
   chip8.setMemory(0x201, 0xA1);
 
@@ -428,6 +429,30 @@ TEST(FX07, setDelayTimer) {
 
   EXPECT_EQ(chip8.getRegisterAt(0), 1);
   EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
+TEST(FX0A, setRegisterX) {
+  Chip8 chip8;
+
+  chip8.keyboard[8] = 1;
+
+  chip8.setMemory(0x200, 0xF0);
+  chip8.setMemory(0x201, 0x0A);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getRegisterAt(0), 8);
+  EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
+TEST(FX0A, DontSetRegisterX) {
+  Chip8 chip8;
+
+  chip8.setMemory(0x200, 0xF0);
+  chip8.setMemory(0x201, 0x0A);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getRegisterAt(0), 0);
+  EXPECT_EQ(chip8.getProgramCounter(), 0x200);
 }
 
 } // namespace

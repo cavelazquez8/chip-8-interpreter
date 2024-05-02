@@ -343,6 +343,24 @@ void Chip8::emulateCycle() {
       registers[Vx] = delayTimer;
       programCounter += 2;
     } break;
+
+    case 0x000A: {
+
+      std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+      bool keyPress = false;
+
+      for (int i = 0; i < 16; ++i) {
+        if (keyboard[i] != 0) {
+          registers[Vx] = i;
+          keyPress = true;
+        }
+      }
+
+      if (!keyPress)
+        return;
+
+      programCounter += 2;
+    } break;
     default:
       printf("Unknown Opcode: %X", opcode);
       break;
