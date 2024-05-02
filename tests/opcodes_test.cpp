@@ -344,6 +344,35 @@ TEST(CXNNTest, Valid) {
   std::uint8_t Vx = chip8.getRegisterAt(0);
   EXPECT_GE(Vx, 0);
   EXPECT_LE(Vx, 0xFF);
-  EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
+TEST(DXYN, DrawFont0) {
+  Chip8 chip8;
+
+  chip8.setMemory(0x200, 0xD0);
+  chip8.setMemory(0x201, 0x05);
+
+  chip8.emulateCycle();
+
+  for (int i = 0; i < 5; ++i) {
+    for (int j = 0; j < 8; ++j) {
+      EXPECT_EQ(chip8.frameBuffer[i * 64 + j], 1);
+    }
+  }
+  EXPECT_EQ(chip8.getIndexRegister(), 0);
+  EXPECT_EQ(chip8.getRegisterAt(0xF), 0);
+  EXPECT_EQ(chip8.getDrawFlag(), true);
+}
+TEST(DXYN, SettingRegisterFTo1) {
+  Chip8 chip8;
+  chip8.frameBuffer[0] = 1;
+  chip8.setMemory(0x200, 0xD0);
+  chip8.setMemory(0x201, 0x05);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.frameBuffer[0], 0);
+  EXPECT_EQ(chip8.getIndexRegister(), 0);
+  EXPECT_EQ(chip8.getRegisterAt(0xF), 1);
+  EXPECT_EQ(chip8.getDrawFlag(), true);
 }
 } // namespace

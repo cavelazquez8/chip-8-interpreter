@@ -7,7 +7,7 @@
 std::uint8_t fonts[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
-    0xF,  0x10, 0xF0, 0x80, 0xF0, // 2
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
     0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
     0x90, 0x90, 0xF0, 0x10, 0x10, // 4
     0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
@@ -277,8 +277,36 @@ void Chip8::emulateCycle() {
     registers[Vx] = randNum & NN;
 
     programCounter += 2;
-    break;
-  }
+  } break;
+
+  case 0xD000: {
+    std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+    std::uint8_t Vy = (opcode & 0x00F0) >> 4;
+    std::uint8_t N = opcode & 0x000F;
+
+    std::uint8_t pixel{};
+
+    registers[0xF] = 0;
+
+    for (int yline = 0; yline < N; ++yline) {
+      pixel = memory[indexRegister + yline];
+
+      for (int xline = 0; xline < 8; ++xline) {
+        if ((pixel & (0x80 >> xline)) != 0) {
+
+          if (frameBuffer[((Vx + xline) + ((Vy + yline) * 64))] == 1) {
+
+            registers[0xF] = 1;
+          }
+        }
+        frameBuffer[(yline + Vy) * 64 + (xline + Vx)] ^= 1;
+      }
+    }
+
+    drawFlag = true;
+    programCounter += 2;
+
+  } break;
 
   default:
     printf("Unknown Opcode: %X", opcode);
