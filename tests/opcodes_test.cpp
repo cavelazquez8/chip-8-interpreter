@@ -375,4 +375,25 @@ TEST(DXYN, SettingRegisterFTo1) {
   EXPECT_EQ(chip8.getRegisterAt(0xF), 1);
   EXPECT_EQ(chip8.getDrawFlag(), true);
 }
+TEST(EX9E, SkipNextInstruction) {
+  Chip8 chip8;
+
+  chip8.keyboard[0] = 1;
+  chip8.setMemory(0x200, 0xE0);
+  chip8.setMemory(0x201, 0x9E);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x204);
+}
+TEST(EX9E, DontSkipNextInstruction) {
+  Chip8 chip8;
+
+  chip8.setMemory(0x200, 0xE0);
+  chip8.setMemory(0x201, 0x9E);
+
+  chip8.emulateCycle();
+
+  EXPECT_EQ(chip8.getProgramCounter(), 0x202);
+}
 } // namespace
