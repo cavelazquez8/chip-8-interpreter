@@ -361,6 +361,14 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
+
+    case 0x0015: {
+
+      std::uint8_t Vx = (opcode & 0x0F00) >> 8;
+
+      delayTimer = registers[Vx];
+      programCounter += 2;
+    } break;
     default:
       printf("Unknown Opcode: %X", opcode);
       break;
@@ -405,3 +413,4 @@ std::uint16_t Chip8::getStackAt(std::uint8_t subroutine) {
 std::uint16_t Chip8::getProgramCounter() { return programCounter; }
 std::uint8_t Chip8::getRegisterAt(std::uint8_t reg) { return registers[reg]; }
 bool Chip8::getDrawFlag() { return drawFlag; }
+std::uint8_t Chip8::getDelayTimer() { return delayTimer; }
