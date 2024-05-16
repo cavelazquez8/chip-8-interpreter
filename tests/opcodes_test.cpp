@@ -1,6 +1,7 @@
 #include "../src/chip8.h"
 
 #include "gtest/gtest.h"
+#include <cstdint>
 
 namespace {
 
@@ -510,4 +511,35 @@ TEST(FX29, setIndexRegister) {
   EXPECT_EQ(chip8.getProgramCounter(), 0x202);
 }
 
+TEST(FX33, storeBCDinMemory_255) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0xFF);
+
+  chip8.setMemory(0x200, 0xF0);
+  chip8.setMemory(0x201, 0x33);
+
+  chip8.emulateCycle();
+
+  std::uint8_t indexRegister = chip8.getIndexRegister();
+  EXPECT_EQ(chip8.getMemoryAt(indexRegister), 2);
+  EXPECT_EQ(chip8.getMemoryAt(indexRegister + 1), 5);
+  EXPECT_EQ(chip8.getMemoryAt(indexRegister + 2), 5);
+}
+
+TEST(FX33, storeBCDinMemory_001) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x01);
+
+  chip8.setMemory(0x200, 0xF0);
+  chip8.setMemory(0x201, 0x33);
+
+  chip8.emulateCycle();
+
+  std::uint8_t indexRegister = chip8.getIndexRegister();
+  EXPECT_EQ(chip8.getMemoryAt(indexRegister), 0);
+  EXPECT_EQ(chip8.getMemoryAt(indexRegister + 1), 0);
+  EXPECT_EQ(chip8.getMemoryAt(indexRegister + 2), 1);
+}
 } // namespace

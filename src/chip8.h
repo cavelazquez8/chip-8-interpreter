@@ -21,14 +21,15 @@ public:
   void setRegisterAt(std::uint8_t reg, std::uint8_t value);
   void setDelayTimer(std::uint8_t value);
   // Getters
+  std::uint8_t getMemoryAt(std::uint8_t address);
   std::uint16_t getIndexRegister();
-  std::uint8_t getStackPointer();
-  std::uint16_t getStackAt(std::uint8_t subroutine);
   std::uint16_t getProgramCounter();
+  std::uint16_t getStackAt(std::uint8_t subroutine);
+  std::uint8_t getStackPointer();
   std::uint8_t getRegisterAt(std::uint8_t reg);
-  bool getDrawFlag();
   std::uint8_t getDelayTimer();
   std::uint8_t getSoundTimer();
+  bool getDrawFlag();
 
 private:
   std::uint8_t memory[4096];

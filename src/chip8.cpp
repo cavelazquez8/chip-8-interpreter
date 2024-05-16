@@ -395,10 +395,21 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
+    case 0x0033: {
+
+      std::uint8_t Vx = registers[(opcode & 0x0F00) >> 8];
+
+      memory[indexRegister] = Vx / 100;
+      memory[indexRegister + 1] = (Vx / 10) % 10;
+      memory[indexRegister + 2] = Vx % 10;
+
+      programCounter += 2;
+    } break;
     default:
       printf("Unknown Opcode: %X", opcode);
       break;
     }
+
   default:
     printf("Unknown Opcode: %X", opcode);
   }
@@ -431,13 +442,16 @@ void Chip8::setRegisterAt(std::uint8_t reg, std::uint8_t value) {
 void Chip8::setDelayTimer(std::uint8_t value) { delayTimer = value; }
 
 // Getters
+std::uint8_t Chip8::getMemoryAt(std::uint8_t address) {
+  return memory[address];
+}
 std::uint16_t Chip8::getIndexRegister() { return indexRegister; }
-std::uint8_t Chip8::getStackPointer() { return stackPointer; }
+std::uint16_t Chip8::getProgramCounter() { return programCounter; }
 std::uint16_t Chip8::getStackAt(std::uint8_t subroutine) {
   return stack[subroutine];
 }
-std::uint16_t Chip8::getProgramCounter() { return programCounter; }
+std::uint8_t Chip8::getStackPointer() { return stackPointer; }
 std::uint8_t Chip8::getRegisterAt(std::uint8_t reg) { return registers[reg]; }
-bool Chip8::getDrawFlag() { return drawFlag; }
 std::uint8_t Chip8::getDelayTimer() { return delayTimer; }
 std::uint8_t Chip8::getSoundTimer() { return soundTimer; }
+bool Chip8::getDrawFlag() { return drawFlag; }
