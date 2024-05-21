@@ -563,4 +563,18 @@ TEST(FX55, StoreFromV0ToV3) {
   }
 }
 
+TEST(FX65, FillFromV0ToV3) {
+  Chip8 chip8;
+
+  chip8.setMemory(0x200, 0xF3);
+  chip8.setMemory(0x201, 0x65);
+
+  chip8.emulateCycle();
+
+  std::uint8_t indexRegister = chip8.getIndexRegister();
+
+  for (int i = 0; i <= 3; ++i) {
+    EXPECT_EQ(chip8.getRegisterAt(i), chip8.getMemoryAt(indexRegister + i));
+  }
+}
 } // namespace
