@@ -405,6 +405,15 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
+    case 0x0055: {
+
+      std::uint8_t Vx = registers[(opcode & 0x0F00) >> 8];
+
+      for (int i = 0; i <= Vx; ++i) {
+        memory[indexRegister + i] = registers[i];
+      }
+      programCounter += 2;
+    }
     default:
       printf("Unknown Opcode: %X", opcode);
       break;
