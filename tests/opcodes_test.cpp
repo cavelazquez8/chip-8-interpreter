@@ -542,4 +542,25 @@ TEST(FX33, storeBCDinMemory_001) {
   EXPECT_EQ(chip8.getMemoryAt(indexRegister + 1), 0);
   EXPECT_EQ(chip8.getMemoryAt(indexRegister + 2), 1);
 }
+
+TEST(FX55, StoreFromV0ToV3) {
+  Chip8 chip8;
+
+  chip8.setRegisterAt(0, 0x01);
+  chip8.setRegisterAt(1, 0x02);
+  chip8.setRegisterAt(2, 0x03);
+  chip8.setRegisterAt(3, 0x04);
+
+  chip8.setMemory(0x200, 0xF3);
+  chip8.setMemory(0x201, 0x55);
+
+  chip8.emulateCycle();
+
+  std::uint8_t indexRegister = chip8.getIndexRegister();
+
+  for (int i = 0; i <= 3; ++i) {
+    EXPECT_EQ(chip8.getMemoryAt(i), i + 1);
+  }
+}
+
 } // namespace
