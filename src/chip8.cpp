@@ -62,7 +62,6 @@ void Chip8::emulateCycle() {
   switch (opcode & 0xF000) {
   case 0x0000:
     switch (opcode & 0x000F) {
-
     case 0x0000: // Clears the screen
       for (int i = 0; i < 64 * 32; ++i) {
         frameBuffer[i] = 0;
@@ -72,28 +71,23 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
       break;
-
     case 0x000E: // Returns from a subroutine
       stackPointer--;
       programCounter = stack[stackPointer];
       programCounter += 2;
       break;
-
     default:
       printf("Unknown Opcode: %X", opcode);
     }
     break;
-
   case 0x1000:
     programCounter = opcode & 0x0FFF;
     break;
-
   case 0x2000:
     stack[stackPointer] = programCounter;
     stackPointer++;
     programCounter = opcode & 0x0FFF;
     break;
-
   case 0x3000: {
     std::uint8_t x = (opcode & 0x0F00) >> 8;
     std::uint8_t nn = opcode & 0x00FF;
@@ -103,7 +97,6 @@ void Chip8::emulateCycle() {
       programCounter += 2;
     }
   } break;
-
   case 0x4000: {
     std::uint8_t x = (opcode & 0x0F00) >> 8;
     std::uint8_t nn = opcode & 0x00FF;
@@ -113,7 +106,6 @@ void Chip8::emulateCycle() {
       programCounter += 2;
     }
   } break;
-
   case 0x5000: {
     std::uint8_t x = (opcode & 0x0F00) >> 8;
     std::uint8_t y = (opcode & 0x00F0) >> 4;
@@ -123,7 +115,6 @@ void Chip8::emulateCycle() {
       programCounter += 2;
     }
   } break;
-
   case 0x6000: {
     std::uint8_t Vx = (opcode & 0x0F00) >> 8;
     std::uint8_t NN = (opcode & 0x00FF);
@@ -132,7 +123,6 @@ void Chip8::emulateCycle() {
 
     programCounter += 2;
   } break;
-
   case 0x7000: {
     std::uint8_t Vx = (opcode & 0x0F00) >> 8;
     std::uint8_t NN = (opcode & 0x00FF);
@@ -142,7 +132,6 @@ void Chip8::emulateCycle() {
     programCounter += 2;
 
   } break;
-
   case 0x8000:
     switch (opcode & 0x000F) {
     case 0x0000: { // 0x8XY0
@@ -153,7 +142,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0001: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -162,7 +150,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0002: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -171,7 +158,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0003: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -180,7 +166,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0004: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -195,7 +180,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0005: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -210,7 +194,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0006: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -221,7 +204,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0007: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -236,7 +218,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x000E: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -247,10 +228,10 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     default:
       printf("Unknown Opcode: %X", opcode);
     }
+    break;
 
   case 0x9000: {
     std::uint8_t Vx = (opcode & 0x0F00) >> 8;
@@ -262,16 +243,13 @@ void Chip8::emulateCycle() {
       programCounter += 2;
     }
   } break;
-
   case 0xA000: // ANNN: Sets I to the address NNN
     indexRegister = opcode & 0x0FFF;
     programCounter += 2;
     break;
-
   case 0xB000:
     programCounter = registers[0] + (opcode & 0x0FFF);
     break;
-
   case 0xC000: {
     std::uint8_t Vx = (opcode & 0x0F00) >> 8;
     std::uint8_t NN = opcode & 0x00FF;
@@ -281,7 +259,6 @@ void Chip8::emulateCycle() {
 
     programCounter += 2;
   } break;
-
   case 0xD000: {
     std::uint8_t Vx = (opcode & 0x0F00) >> 8;
     std::uint8_t Vy = (opcode & 0x00F0) >> 4;
@@ -309,7 +286,6 @@ void Chip8::emulateCycle() {
     programCounter += 2;
 
   } break;
-
   case 0xE000:
     switch (opcode & 0x000F) {
     case 0x000E: {
@@ -321,9 +297,7 @@ void Chip8::emulateCycle() {
         programCounter += 2;
       }
     } break;
-
     case 0x0001: {
-
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
 
       if (keyboard[Vx] == 0) {
@@ -337,6 +311,7 @@ void Chip8::emulateCycle() {
       printf("Unknown Opcode: %X", opcode);
       break;
     }
+    break;
   case 0xF000:
     switch (opcode & 0x00FF) {
     case 0x0007: {
@@ -345,7 +320,6 @@ void Chip8::emulateCycle() {
       registers[Vx] = delayTimer;
       programCounter += 2;
     } break;
-
     case 0x000A: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       bool keyPress = false;
@@ -362,7 +336,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0015: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
 
@@ -370,7 +343,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0018: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
 
@@ -378,7 +350,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x001E: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
 
@@ -386,7 +357,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0029: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
 
@@ -394,7 +364,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0033: {
       std::uint8_t Vx = registers[(opcode & 0x0F00) >> 8];
 
@@ -404,7 +373,6 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     case 0x0055: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
 
@@ -413,7 +381,6 @@ void Chip8::emulateCycle() {
       }
       programCounter += 2;
     } break;
-
     case 0x0065: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
 
@@ -423,11 +390,11 @@ void Chip8::emulateCycle() {
 
       programCounter += 2;
     } break;
-
     default:
       printf("Unknown Opcode: %X", opcode);
       break;
     }
+    break;
 
   default:
     printf("Unknown Opcode: %X", opcode);
