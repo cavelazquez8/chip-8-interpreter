@@ -1,35 +1,55 @@
-#include <SDL2/SDL_video.h>
-#include <iostream>
-
 #include "SDL2/SDL.h"
+#include <SDL2/SDL_error.h>
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_render.h>
 
 #include "chip8.h"
 
+#include <SDL2/SDL_video.h>
+#include <iostream>
+
 int main(int arc, char **argv) {
-
-  int w = 1024;
-  int h = 512;
-
-  SDL_Window *window = NULL;
+  SDL_Window *window = nullptr;
+  SDL_Renderer *renderer = nullptr;
 
   if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-    printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-    exit(1);
+    std::cerr << "SDL could not initialize! SDL Error: " << SDL_GetError();
+    return 1;
   }
 
-  window = SDL_CreateWindow("Chip-8 Emulator", SDL_WINDOWPOS_UNDEFINED,
-                            SDL_WINDOWPOS_UNDEFINED, w, h, SDL_WINDOW_SHOWN);
-
-  if (window == NULL) {
-    printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-    exit(2);
+  window =
+      SDL_CreateWindow("Chip8", SDL_WINDOWPOS_UNDEFINED,
+                       SDL_WINDOWPOS_UNDEFINED, 640, 320, SDL_WINDOW_SHOWN);
+  if (window == nullptr) {
+    std::cerr << "Window could not be created! SDL Error:" << SDL_GetError();
+    SDL_Quit();
+    return 1;
   }
 
-  Chip8 chip8;
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  if (renderer == nullptr) {
+    // Handle error
+    std::cerr << "Renderer could not be created! SDL Error: " << SDL_GetError();
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return 1;
+  }
 
-  SDL_Renderer *renderer =
-      SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-  // Set some test pixels in the frame buffer
+  SDL_Event e;
+
+  bool isAppRunning = true;
+
+  while (isAppRunning) {
+    while (SDL_PollEvent(&e)) {
+      if (e.type == SDL_QUIT) {
+        isAppRunning = false;
+      }
+    }
+  }
+
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
 
   return 0;
 }
