@@ -260,8 +260,8 @@ void Chip8::emulateCycle() {
     programCounter += 2;
   } break;
   case 0xD000: {
-    std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-    std::uint8_t Vy = (opcode & 0x00F0) >> 4;
+    std::uint8_t Vx = registers[(opcode & 0x0F00) >> 8];
+    std::uint8_t Vy = registers[(opcode & 0x00F0) >> 4];
     std::uint8_t N = opcode & 0x000F;
     std::uint8_t pixel{};
 
@@ -426,6 +426,8 @@ void Chip8::setRegisterAt(std::uint8_t reg, std::uint8_t value) {
   registers[reg] = value;
 }
 void Chip8::setDelayTimer(std::uint8_t value) { delayTimer = value; }
+void Chip8::setDrawFlag(bool condition) { drawFlag = condition; }
+void Chip8::setIndexRegister(std::uint16_t value) { indexRegister = value; }
 
 // Getters
 std::uint8_t Chip8::getMemoryAt(std::uint8_t address) {
