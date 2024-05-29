@@ -20,6 +20,8 @@ public:
   void setStackPointer(std::uint8_t subroutine);
   void setRegisterAt(std::uint8_t reg, std::uint8_t value);
   void setDelayTimer(std::uint8_t value);
+  void setDrawFlag(bool condition);
+  void setIndexRegister(std::uint16_t value);
   // Getters
   std::uint8_t getMemoryAt(std::uint8_t address);
   std::uint16_t getIndexRegister();
