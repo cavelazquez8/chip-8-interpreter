@@ -2,8 +2,11 @@
 
 #include "chip8.h"
 
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
+#include <cstdint>
 #include <iostream>
 
 int main(int argc, char **argv) {
@@ -44,6 +47,11 @@ int main(int argc, char **argv) {
 
   uint32_t pixels[2048];
 
+  std::uint8_t keymap[16] = {
+      SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_q, SDLK_w, SDLK_e, SDLK_r,
+      SDLK_a, SDLK_s, SDLK_d, SDLK_f, SDLK_z, SDLK_x, SDLK_c, SDLK_v,
+  };
+
   Chip8 chip8;
   SDL_Event e;
   bool isAppRunning = true;
@@ -51,6 +59,22 @@ int main(int argc, char **argv) {
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) {
         isAppRunning = false;
+      }
+
+      if (e.type == SDL_KEYDOWN) {
+        for (int i = 0; i < 16; ++i) {
+          if (e.key.keysym.sym == keymap[i]) {
+            chip8.keyboard[i] = 1;
+          }
+        }
+      }
+
+      if (e.type == SDL_KEYUP) {
+        for (int i = 0; i < 16; ++i) {
+          if (e.key.keysym.sym == keymap[i]) {
+            chip8.keyboard[i] = 0;
+          }
+        }
       }
     }
 
