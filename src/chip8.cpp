@@ -223,7 +223,6 @@ void Chip8::emulateCycle() {
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
 
       registers[0xF] = registers[Vx] >> 7;
-
       registers[Vx] <<= 1;
 
       programCounter += 2;
@@ -263,34 +262,29 @@ void Chip8::emulateCycle() {
     std::uint8_t Vx = registers[(opcode & 0x0F00) >> 8];
     std::uint8_t Vy = registers[(opcode & 0x00F0) >> 4];
     std::uint8_t N = opcode & 0x000F;
-    std::uint8_t pixel{};
+    std::uint8_t pixel;
 
     registers[0xF] = 0;
 
     for (int yline = 0; yline < N; ++yline) {
       pixel = memory[indexRegister + yline];
-
       for (int xline = 0; xline < 8; ++xline) {
         if ((pixel & (0x80 >> xline)) != 0) {
-
           if (frameBuffer[((Vx + xline) + ((Vy + yline) * 64))] == 1) {
-
             registers[0xF] = 1;
           }
+          frameBuffer[((Vx + xline) + ((Vy + yline) * 64))] ^= 1;
         }
-        frameBuffer[(yline + Vy) * 64 + (xline + Vx)] ^= 1;
       }
     }
 
     drawFlag = true;
     programCounter += 2;
-
   } break;
   case 0xE000:
     switch (opcode & 0x000F) {
     case 0x000E: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-
       if (keyboard[Vx] != 0) {
         programCounter += 4;
       } else {
@@ -299,7 +293,6 @@ void Chip8::emulateCycle() {
     } break;
     case 0x0001: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-
       if (keyboard[Vx] == 0) {
         programCounter += 4;
       } else {
@@ -316,14 +309,12 @@ void Chip8::emulateCycle() {
     switch (opcode & 0x00FF) {
     case 0x0007: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-
       registers[Vx] = delayTimer;
       programCounter += 2;
     } break;
     case 0x000A: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       bool keyPress = false;
-
       for (int i = 0; i < 16; ++i) {
         if (keyboard[i] != 0) {
           registers[Vx] = i;
@@ -338,44 +329,33 @@ void Chip8::emulateCycle() {
     } break;
     case 0x0015: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-
       delayTimer = registers[Vx];
-
       programCounter += 2;
     } break;
     case 0x0018: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-
       soundTimer = registers[Vx];
-
       programCounter += 2;
     } break;
     case 0x001E: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-
       indexRegister += registers[Vx];
-
       programCounter += 2;
     } break;
     case 0x0029: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-
       indexRegister = registers[Vx] * 0x5;
-
       programCounter += 2;
     } break;
     case 0x0033: {
       std::uint8_t Vx = registers[(opcode & 0x0F00) >> 8];
-
       memory[indexRegister] = Vx / 100;
       memory[indexRegister + 1] = (Vx / 10) % 10;
       memory[indexRegister + 2] = Vx % 10;
-
       programCounter += 2;
     } break;
     case 0x0055: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-
       for (int i = 0; i <= Vx; ++i) {
         memory[indexRegister + i] = registers[i];
       }
@@ -383,11 +363,9 @@ void Chip8::emulateCycle() {
     } break;
     case 0x0065: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
-
       for (int i = 0; i <= Vx; ++i) {
         registers[i] = memory[indexRegister + i];
       }
-
       programCounter += 2;
     } break;
     default:

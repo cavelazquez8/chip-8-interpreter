@@ -45,9 +45,8 @@ int main(int argc, char **argv) {
   uint32_t pixels[2048];
 
   Chip8 chip8;
-
-  bool isAppRunning = true;
   SDL_Event e;
+  bool isAppRunning = true;
   while (isAppRunning) {
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) {
@@ -60,6 +59,7 @@ int main(int argc, char **argv) {
         uint8_t pixel = chip8.frameBuffer[i];
         pixels[i] = (0x00FFFFFF * pixel) | 0xFF000000;
       }
+
       SDL_UpdateTexture(texture, nullptr, pixels, 64 * sizeof(Uint32));
       SDL_RenderClear(renderer);
       SDL_RenderCopy(renderer, texture, nullptr, nullptr);
@@ -67,13 +67,11 @@ int main(int argc, char **argv) {
 
       chip8.setDrawFlag(false);
     }
-
-    chip8.setDrawFlag(false); // Reset draw flag
   }
+
   SDL_DestroyTexture(texture);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
-
   return 0;
 }
