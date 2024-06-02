@@ -10,6 +10,14 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
+
+  if (argc != 2) {
+    std::cerr << "Incorrect Number of arguments" << std::endl;
+    return 1;
+  }
+
+  Chip8 chip8;
+
   SDL_Window *window = nullptr;
   SDL_Renderer *renderer = nullptr;
 
@@ -52,7 +60,10 @@ int main(int argc, char **argv) {
       SDLK_a, SDLK_s, SDLK_d, SDLK_f, SDLK_z, SDLK_x, SDLK_c, SDLK_v,
   };
 
-  Chip8 chip8;
+  if (!chip8.loadRom(argv[1])) {
+    return 2;
+  }
+
   SDL_Event e;
   bool isAppRunning = true;
   while (isAppRunning) {

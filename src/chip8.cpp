@@ -2,7 +2,11 @@
 
 #include "random.h"
 #include <cstdint>
+#include <fstream>
+#include <ios>
+#include <iostream>
 #include <stdio.h>
+#include <vector>
 
 std::uint8_t fonts[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -25,6 +29,35 @@ std::uint8_t fonts[80] = {
 
 Chip8::Chip8() { init(); }
 
+bool Chip8::loadRom(const std::string &path) {
+
+  std::ifstream file(path, std::ios::binary | std::ios::ate);
+
+  if (!file.is_open()) {
+    std::cerr << "Failed to open ROM: " << path << std::endl;
+    return false;
+  }
+
+  std::streamsize size = file.tellg();
+
+  if (size <= 0 || size > (4096 - 0x200)) {
+    std::cerr << "Rom size is invalid or too large: " << size << "bytes"
+              << std::endl;
+    return false;
+  }
+
+  file.seekg(0, std::ios::beg);
+
+  std::vector<std::uint8_t> buffer(size);
+
+  if (!file.read(reinterpret_cast<char *>(buffer.data()), size)) {
+    std::cerr << "Failed to read ROM: " << path << std::endl;
+    return false;
+  }
+
+  std::copy(buffer.begin(), buffer.end(), memory + 0x200);
+  return true;
+}
 void Chip8::init() {
   programCounter = 0x200;
   opcode = 0;
