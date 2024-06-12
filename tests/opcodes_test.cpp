@@ -355,9 +355,17 @@ TEST(DXYN, DrawFont0) {
 
   chip8.emulateCycle();
 
+  std::uint8_t expectedFramebuffer[5][8] = {
+      {1, 1, 1, 1, 0, 0, 0, 0}, // 0xF0 -> 1111 0000
+      {1, 0, 0, 1, 0, 0, 0, 0}, // 0x90 -> 1001 0000
+      {1, 0, 0, 1, 0, 0, 0, 0}, // 0x90 -> 1001 0000
+      {1, 0, 0, 1, 0, 0, 0, 0}, // 0x90 -> 1001 0000
+      {1, 1, 1, 1, 0, 0, 0, 0}  // 0xF0 -> 1111 0000
+  };
+
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 8; ++j) {
-      EXPECT_EQ(chip8.frameBuffer[i * 64 + j], 1);
+      EXPECT_EQ(chip8.frameBuffer[i * 64 + j], expectedFramebuffer[i][j]);
     }
   }
   EXPECT_EQ(chip8.getIndexRegister(), 0);
