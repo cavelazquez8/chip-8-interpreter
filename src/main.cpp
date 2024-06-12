@@ -109,6 +109,7 @@ int main(int argc, char **argv) {
         }
       }
     }
+    SDL_Delay(1000 / 60);
   }
 
   SDL_DestroyTexture(texture);
