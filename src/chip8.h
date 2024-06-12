@@ -2,6 +2,7 @@
 #define CHIP8_H
 
 #include <cstdint>
+#include <string>
 
 class Chip8 {
 public:
@@ -10,9 +11,9 @@ public:
   std::uint8_t frameBuffer[64 * 32];
   std::uint8_t keyboard[16];
 
+  bool loadRom(const std::string &path);
   void init();
   void emulateCycle();
-
   // Setters
   void setMemory(std::uint16_t address, std::uint8_t value);
   void setProgramCounter(std::uint16_t address);
