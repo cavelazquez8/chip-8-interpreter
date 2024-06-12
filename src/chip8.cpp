@@ -2,7 +2,11 @@
 
 #include "random.h"
 #include <cstdint>
+#include <fstream>
+#include <ios>
+#include <iostream>
 #include <stdio.h>
+#include <vector>
 
 std::uint8_t fonts[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -25,6 +29,35 @@ std::uint8_t fonts[80] = {
 
 Chip8::Chip8() { init(); }
 
+bool Chip8::loadRom(const std::string &path) {
+
+  std::ifstream file(path, std::ios::binary | std::ios::ate);
+
+  if (!file.is_open()) {
+    std::cerr << "Failed to open ROM: " << path << std::endl;
+    return false;
+  }
+
+  std::streamsize size = file.tellg();
+
+  if (size <= 0 || size > (4096 - 0x200)) {
+    std::cerr << "Rom size is invalid or too large: " << size << "bytes"
+              << std::endl;
+    return false;
+  }
+
+  file.seekg(0, std::ios::beg);
+
+  std::vector<std::uint8_t> buffer(size);
+
+  if (!file.read(reinterpret_cast<char *>(buffer.data()), size)) {
+    std::cerr << "Failed to read ROM: " << path << std::endl;
+    return false;
+  }
+
+  std::copy(buffer.begin(), buffer.end(), memory + 0x200);
+  return true;
+}
 void Chip8::init() {
   programCounter = 0x200;
   opcode = 0;
@@ -68,7 +101,6 @@ void Chip8::emulateCycle() {
       }
 
       drawFlag = true;
-
       programCounter += 2;
       break;
     case 0x000E: // Returns from a subroutine
@@ -120,7 +152,6 @@ void Chip8::emulateCycle() {
     std::uint8_t NN = (opcode & 0x00FF);
 
     registers[Vx] = NN;
-
     programCounter += 2;
   } break;
   case 0x7000: {
@@ -128,9 +159,7 @@ void Chip8::emulateCycle() {
     std::uint8_t NN = (opcode & 0x00FF);
 
     registers[Vx] += NN;
-
     programCounter += 2;
-
   } break;
   case 0x8000:
     switch (opcode & 0x000F) {
@@ -139,7 +168,6 @@ void Chip8::emulateCycle() {
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
 
       registers[Vx] = registers[Vy];
-
       programCounter += 2;
     } break;
     case 0x0001: {
@@ -147,7 +175,6 @@ void Chip8::emulateCycle() {
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
 
       registers[Vx] |= registers[Vy];
-
       programCounter += 2;
     } break;
     case 0x0002: {
@@ -155,7 +182,6 @@ void Chip8::emulateCycle() {
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
 
       registers[Vx] &= registers[Vy];
-
       programCounter += 2;
     } break;
     case 0x0003: {
@@ -163,7 +189,6 @@ void Chip8::emulateCycle() {
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
 
       registers[Vx] ^= registers[Vy];
-
       programCounter += 2;
     } break;
     case 0x0004: {
@@ -177,7 +202,6 @@ void Chip8::emulateCycle() {
       }
 
       registers[Vx] += registers[Vy];
-
       programCounter += 2;
     } break;
     case 0x0005: {
@@ -191,7 +215,6 @@ void Chip8::emulateCycle() {
       }
 
       registers[Vx] -= registers[Vy];
-
       programCounter += 2;
     } break;
     case 0x0006: {
@@ -199,7 +222,6 @@ void Chip8::emulateCycle() {
       std::uint8_t Vy = (opcode & 0x00F0) >> 4;
 
       registers[0xF] = registers[Vx] & 1;
-
       registers[Vx] >>= 1;
 
       programCounter += 2;
@@ -215,7 +237,6 @@ void Chip8::emulateCycle() {
       }
 
       registers[Vx] = registers[Vy] - registers[Vx];
-
       programCounter += 2;
     } break;
     case 0x000E: {
@@ -255,7 +276,6 @@ void Chip8::emulateCycle() {
     std::uint8_t randNum = Random::get<uint8_t>(0, 255);
 
     registers[Vx] = randNum & NN;
-
     programCounter += 2;
   } break;
   case 0xD000: {
@@ -299,7 +319,6 @@ void Chip8::emulateCycle() {
         programCounter += 2;
       }
     } break;
-
     default:
       printf("Unknown Opcode: %X", opcode);
       break;
@@ -315,6 +334,7 @@ void Chip8::emulateCycle() {
     case 0x000A: {
       std::uint8_t Vx = (opcode & 0x0F00) >> 8;
       bool keyPress = false;
+
       for (int i = 0; i < 16; ++i) {
         if (keyboard[i] != 0) {
           registers[Vx] = i;
@@ -382,7 +402,9 @@ void Chip8::emulateCycle() {
     --delayTimer;
   }
   if (soundTimer > 0) {
-    // Beep
+    if (soundTimer == 1) {
+      printf("Beep!\n");
+    }
     --soundTimer;
   }
 }
