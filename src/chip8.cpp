@@ -402,7 +402,9 @@ void Chip8::emulateCycle() {
     --delayTimer;
   }
   if (soundTimer > 0) {
-    // Beep
+    if (soundTimer == 1) {
+      printf("Beep!\n");
+    }
     --soundTimer;
   }
 }

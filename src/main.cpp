@@ -1,11 +1,11 @@
-#include "SDL2/SDL.h"
-
 #include "chip8.h"
 
+#include "SDL2/SDL.h"
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
+
 #include <cstdint>
 #include <iostream>
 
@@ -61,12 +61,33 @@ int main(int argc, char **argv) {
   };
 
   if (!chip8.loadRom(argv[1])) {
+    std::cerr << "Failed to load ROM: " << argv[1] << std::endl;
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return 2;
   }
 
   SDL_Event e;
   bool isAppRunning = true;
   while (isAppRunning) {
+    chip8.emulateCycle();
+
+    if (chip8.getDrawFlag()) {
+      for (int i = 0; i < 2048; ++i) {
+        uint8_t pixel = chip8.frameBuffer[i];
+        pixels[i] = (0x00FFFFFF * pixel) | 0xFF000000;
+      }
+
+      SDL_UpdateTexture(texture, nullptr, pixels, 64 * sizeof(Uint32));
+      SDL_RenderClear(renderer);
+      SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+      SDL_RenderPresent(renderer);
+
+      chip8.setDrawFlag(false);
+    }
+
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) {
         isAppRunning = false;
@@ -87,20 +108,6 @@ int main(int argc, char **argv) {
           }
         }
       }
-    }
-
-    if (chip8.getDrawFlag()) {
-      for (int i = 0; i < 2048; ++i) {
-        uint8_t pixel = chip8.frameBuffer[i];
-        pixels[i] = (0x00FFFFFF * pixel) | 0xFF000000;
-      }
-
-      SDL_UpdateTexture(texture, nullptr, pixels, 64 * sizeof(Uint32));
-      SDL_RenderClear(renderer);
-      SDL_RenderCopy(renderer, texture, nullptr, nullptr);
-      SDL_RenderPresent(renderer);
-
-      chip8.setDrawFlag(false);
     }
   }
 
