@@ -430,16 +430,18 @@ void Chip8::setDrawFlag(bool condition) { drawFlag = condition; }
 void Chip8::setIndexRegister(std::uint16_t value) { indexRegister = value; }
 
 // Getters
-std::uint8_t Chip8::getMemoryAt(std::uint8_t address) {
+std::uint8_t Chip8::getMemoryAt(std::uint8_t address) const {
   return memory[address];
 }
-std::uint16_t Chip8::getIndexRegister() { return indexRegister; }
-std::uint16_t Chip8::getProgramCounter() { return programCounter; }
-std::uint16_t Chip8::getStackAt(std::uint8_t subroutine) {
+std::uint16_t Chip8::getIndexRegister() const { return indexRegister; }
+std::uint16_t Chip8::getProgramCounter() const { return programCounter; }
+std::uint16_t Chip8::getStackAt(std::uint8_t subroutine) const {
   return stack[subroutine];
 }
-std::uint8_t Chip8::getStackPointer() { return stackPointer; }
-std::uint8_t Chip8::getRegisterAt(std::uint8_t reg) { return registers[reg]; }
-std::uint8_t Chip8::getDelayTimer() { return delayTimer; }
-std::uint8_t Chip8::getSoundTimer() { return soundTimer; }
-bool Chip8::getDrawFlag() { return drawFlag; }
+std::uint8_t Chip8::getStackPointer() const { return stackPointer; }
+std::uint8_t Chip8::getRegisterAt(std::uint8_t reg) const {
+  return registers[reg];
+}
+std::uint8_t Chip8::getDelayTimer() const { return delayTimer; }
+std::uint8_t Chip8::getSoundTimer() const { return soundTimer; }
+bool Chip8::getDrawFlag() const { return drawFlag; }
