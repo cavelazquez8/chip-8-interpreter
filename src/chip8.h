@@ -24,15 +24,15 @@ public:
   void setDrawFlag(bool condition);
   void setIndexRegister(std::uint16_t value);
   // Getters
-  std::uint8_t getMemoryAt(std::uint8_t address);
-  std::uint16_t getIndexRegister();
-  std::uint16_t getProgramCounter();
-  std::uint16_t getStackAt(std::uint8_t subroutine);
-  std::uint8_t getStackPointer();
-  std::uint8_t getRegisterAt(std::uint8_t reg);
-  std::uint8_t getDelayTimer();
-  std::uint8_t getSoundTimer();
-  bool getDrawFlag();
+  std::uint8_t getMemoryAt(std::uint8_t address) const;
+  std::uint16_t getIndexRegister() const;
+  std::uint16_t getProgramCounter() const;
+  std::uint16_t getStackAt(std::uint8_t subroutine) const;
+  std::uint8_t getStackPointer() const;
+  std::uint8_t getRegisterAt(std::uint8_t reg) const;
+  std::uint8_t getDelayTimer() const;
+  std::uint8_t getSoundTimer() const;
+  bool getDrawFlag() const;
 
 private:
   std::uint8_t memory[4096];
