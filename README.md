@@ -1,5 +1,30 @@
 # Chip-8 Interpreter
 
-## Motivation
+## Overview
 
-I'm taking my first steps into the fascinating world of video game emulation! I've always been amazed by emulators and how they let me relive my childhood gaming memories. GBA, Gamecube, PSP, PS3, even mobile games – these consoles were such a huge part of growing up, and now I'm excited to learn how to emulate them myself. It looks pretty complex from what I've seen so far, but I love a tough challenge and I can't wait to dive in!
+This project is a Chip-8 emulator written in C++. It supports all standard Chip-8 opcodes and uses SDL2 for rendering and input handling. This emulator is a great way to learn about emulation and low-level programming concepts.
+
+## Features
+
+- Full support for Chip-8 instruction set.
+- Keyboard input handling.
+- Display rendering using SDL2.
+- Unit tests for key opcodes.
+
+## Building the Project
+
+### Prerequisites
+
+- CMake 3.2 or higher
+- SDL2 development libraries
+- A C++17 compatible compiler
+
+### Building
+
+```sh
+git clone https://github.com/cavelazquez8/chip-8-interpreter.git
+cd chip-8-interpreter
+mkdir build
+cd build
+cmake ..
+make

@@ -25,7 +25,6 @@ int main(int argc, char **argv) {
     std::cerr << "SDL could not initialize! SDL Error: " << SDL_GetError();
     return 1;
   }
-
   window =
       SDL_CreateWindow("Chip8", SDL_WINDOWPOS_UNDEFINED,
                        SDL_WINDOWPOS_UNDEFINED, 1024, 512, SDL_WINDOW_SHOWN);
