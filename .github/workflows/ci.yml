@@ -62,7 +62,7 @@ jobs:
       # 6. Upload coverage artifacts (HTML report or .info file)
       - name: Upload coverage artifact
         if: ${{ success() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-html-report
           path: build/coverage_html
