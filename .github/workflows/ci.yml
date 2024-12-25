@@ -8,26 +8,69 @@ on:
 
 jobs:
   build-and-test:
+    # We’ll run on ubuntu-latest for both building and coverage.
     runs-on: ubuntu-latest
+
     steps:
+      # 1. Check out the repository
       - name: Checkout code
         uses: actions/checkout@v2
+
+      # 2. Install dependencies
       - name: Install dependencies
-        run: | 
-            sudo apt-get update
-            sudo apt-get install -y cmake build-essential libsdl2-dev libgl1-mesa-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            build-essential \
+            libsdl2-dev \
+            libgl1-mesa-dev \
+            lcov  # lcov for coverage
+
+      # 3. Configure & build (with or without coverage)
+      #    - If you want coverage, use Debug + a custom coverage option.
+      #    - If you want a normal build, omit coverage flags.
       - name: Configure and Build
-        run : |
-          cd src
+        run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_COVERAGE=ON  # <-- You need to handle this option in your CMakeLists
           cmake --build .
-      - name: Run Tests
-        run : |
-          cd tests
-          cmake -S . -B build
-          cmake --build build
-          cd build && ctest --output-on-failure
 
-      
+      # 4. Run tests using ctest
+      - name: Run Tests
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      # 5. Generate coverage reports (only if coverage is enabled)
+      #    - This uses lcov to capture coverage info, remove extraneous paths, 
+      #      and then generate HTML with genhtml.
+      - name: Generate coverage report
+        if: ${{ success() }}  # Only run if previous steps succeeded
+        run: |
+          cd build
+          # 5a. Capture coverage into coverage.info
+          lcov --capture --directory . --output-file coverage.info
+          # 5b. Remove system headers / external libs from the report
+          lcov --remove coverage.info '/usr/*' '*/googletest/*' -o coverage.info
+          # 5c. Generate HTML report
+          genhtml coverage.info --output-directory coverage_html
+
+      # 6. Upload coverage artifacts (HTML report or .info file)
+      - name: Upload coverage artifact
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-html-report
+          path: build/coverage_html
+
+      # 7. Run cppcheck-action (static analysis)
+      - name: cppcheck-action
+        uses: deep5050/cppcheck-action@v3.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          std: c++20
+          output_file: cppcheck_report.txt
