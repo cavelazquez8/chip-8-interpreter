@@ -12,22 +12,46 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Install dependencies
-        run: | 
-            sudo apt-get update
-            sudo apt-get install -y cmake build-essential libsdl2-dev libgl1-mesa-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential libsdl2-dev libgl1-mesa-dev
+
       - name: Configure and Build
-        run : |
+        run: |
           cd src
           mkdir build
           cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           cmake --build .
+
       - name: Run Tests
-        run : |
+        run: |
           cd tests
           cmake -S . -B build
           cmake --build build
           cd build && ctest --output-on-failure
 
-      
+      - name: cppcheck-action
+        uses: deep5050/cppcheck-action@v3.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Uncomment and specify if needed, or leave the defaults
+          # check_library: enable
+          # skip_preprocessor: enable
+          # enable: all
+          # exclude_check: <directories/files to exclude>
+          # inconclusive: enable
+          # inline_suppression: enable
+          # force_language: <language>
+          # force: enable
+          # max_ctu_depth: <depth>
+          # platform: <platform>
+          std: c++20
+          output_file: cppcheck_report.txt
+          # target_branch: <branch>
+          # other_options: <additional options>
+          # pull_request_branch: <branch>
+          # target_repository: <repository>
+          # pull_request_repository: <repository>
