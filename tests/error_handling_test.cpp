@@ -4,12 +4,12 @@
 #include <filesystem>
 #include <fstream>
 
-using namespace chip8;
+// Removed namespace usage - Chip8 is not in a namespace
 
 class ErrorHandlingTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        emulator.reset();
+        emulator.init();
     }
 
     void TearDown() override {

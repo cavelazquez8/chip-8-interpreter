@@ -5,12 +5,12 @@
 #include <filesystem>
 #include <fstream>
 
-using namespace chip8;
+// Removed namespace usage - Chip8 is not in a namespace
 
 class PerformanceTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        emulator.reset();
+        emulator.init();
     }
 
     void TearDown() override {
@@ -133,9 +133,9 @@ TEST_F(PerformanceTest, DisplayUpdateSpeed) {
     
     auto duration = measureExecutionTime([&]() {
         for (int i = 0; i < 100000 && drawCount < numDraws; ++i) {
-            bool wasDrawing = emulator.shouldDraw();
+            bool wasDrawing = emulator.getDrawFlag();
             emulator.emulateCycle();
-            if (!wasDrawing && emulator.shouldDraw()) {
+            if (!wasDrawing && emulator.getDrawFlag()) {
                 drawCount++;
                 emulator.clearDrawFlag();
             }

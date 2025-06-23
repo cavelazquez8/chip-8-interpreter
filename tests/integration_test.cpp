@@ -6,12 +6,12 @@
 #include <thread>
 #include <chrono>
 
-using namespace chip8;
+// Removed namespace usage - Chip8 is not in a namespace
 
 class IntegrationTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        emulator.reset();
+        emulator.init();
     }
 
     void TearDown() override {
@@ -64,7 +64,7 @@ TEST_F(IntegrationTest, CompleteRomExecution) {
     
     // Execute clear screen
     emulator.emulateCycle();
-    EXPECT_TRUE(emulator.shouldDraw());
+    EXPECT_TRUE(emulator.getDrawFlag());
     emulator.clearDrawFlag();
     
     // Execute register sets
@@ -84,7 +84,7 @@ TEST_F(IntegrationTest, CompleteRomExecution) {
     
     // Execute draw instruction
     emulator.emulateCycle();
-    EXPECT_TRUE(emulator.shouldDraw());
+    EXPECT_TRUE(emulator.getDrawFlag());
     
     // Verify sprite was drawn
     auto frameBuffer = emulator.getFrameBuffer();

@@ -6,14 +6,14 @@
 #include <filesystem>
 #include <fstream>
 
-using namespace chip8;
+// Removed namespace usage - Chip8 is not in a namespace
 using ::testing::_;
 using ::testing::Return;
 
 class Chip8Test : public ::testing::Test {
 protected:
     void SetUp() override {
-        emulator.reset();
+        emulator.init();
     }
 
     void TearDown() override {
@@ -39,7 +39,7 @@ TEST_F(Chip8Test, InitialState) {
     EXPECT_EQ(emulator.getStackPointer(), 0);
     EXPECT_EQ(emulator.getDelayTimer(), 0);
     EXPECT_EQ(emulator.getSoundTimer(), 0);
-    EXPECT_FALSE(emulator.shouldDraw());
+    EXPECT_FALSE(emulator.getDrawFlag());
     
     // Test frame buffer is cleared
     auto frameBuffer = emulator.getFrameBuffer();
@@ -61,7 +61,7 @@ TEST_F(Chip8Test, Reset) {
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result.value(), 0);
     EXPECT_EQ(emulator.getDelayTimer(), 0);
-    EXPECT_FALSE(emulator.shouldDraw());
+    EXPECT_FALSE(emulator.getDrawFlag());
 }
 
 // Error handling tests
@@ -174,7 +174,7 @@ TEST_F(Chip8InstructionTest, ClearScreen) {
     frameBuffer = emulator.getFrameBuffer();
     EXPECT_TRUE(std::all_of(frameBuffer.begin(), frameBuffer.end(), 
                            [](auto pixel) { return pixel == 0; }));
-    EXPECT_TRUE(emulator.shouldDraw());
+    EXPECT_TRUE(emulator.getDrawFlag());
     EXPECT_EQ(emulator.getProgramCounter(), Chip8::ROM_START_ADDRESS + 2);
 }
 

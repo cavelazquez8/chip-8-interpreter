@@ -23,8 +23,11 @@ TEST(_00EETest, Valid) {
 TEST(_00E0Test, Valid) {
   Chip8 chip8;
 
-  for (int i = 0; i < 64 * 32; ++i) {
-    chip8.frameBuffer[i] = 0;
+  // Set all pixels to 0 using setPixel method
+  for (int y = 0; y < 32; ++y) {
+    for (int x = 0; x < 64; ++x) {
+      chip8.setPixel(x, y, 0);
+    }
   }
 
   chip8.setMemory(0x200, 0x00);
@@ -34,8 +37,10 @@ TEST(_00E0Test, Valid) {
 
   EXPECT_EQ(chip8.getDrawFlag(), true);
 
+  // Check all pixels are 0 using getFrameBuffer
+  const auto& frameBuffer = chip8.getFrameBuffer();
   for (int i = 0; i < 64 * 32; ++i) {
-    EXPECT_EQ(chip8.frameBuffer[i], 0);
+    EXPECT_EQ(frameBuffer[i], 0);
   }
 
   EXPECT_EQ(chip8.getProgramCounter(), 0x202);
@@ -365,7 +370,7 @@ TEST(DXYN, DrawFont0) {
 
   for (int i = 0; i < 5; ++i) {
     for (int j = 0; j < 8; ++j) {
-      EXPECT_EQ(chip8.frameBuffer[i * 64 + j], expectedFramebuffer[i][j]);
+      EXPECT_EQ(chip8.getFrameBuffer()[i * 64 + j], expectedFramebuffer[i][j]);
     }
   }
   EXPECT_EQ(chip8.getIndexRegister(), 0);
@@ -374,13 +379,13 @@ TEST(DXYN, DrawFont0) {
 }
 TEST(DXYN, SettingRegisterFTo1) {
   Chip8 chip8;
-  chip8.frameBuffer[0] = 1;
+  chip8.setPixel(0, 0, 1);
   chip8.setMemory(0x200, 0xD0);
   chip8.setMemory(0x201, 0x05);
 
   chip8.emulateCycle();
 
-  EXPECT_EQ(chip8.frameBuffer[0], 0);
+  EXPECT_EQ(chip8.getPixel(0, 0), 0);
   EXPECT_EQ(chip8.getIndexRegister(), 0);
   EXPECT_EQ(chip8.getRegisterAt(0xF), 1);
   EXPECT_EQ(chip8.getDrawFlag(), true);
@@ -388,7 +393,7 @@ TEST(DXYN, SettingRegisterFTo1) {
 TEST(EX9E, SkipNextInstruction) {
   Chip8 chip8;
 
-  chip8.keyboard[0] = 1;
+  chip8.setKeyState(0, true);
   chip8.setMemory(0x200, 0xE0);
   chip8.setMemory(0x201, 0x9E);
 
@@ -419,7 +424,7 @@ TEST(EXA1, SkipNextInstruction) {
 TEST(EXA1, DontSkipNextInstruction) {
   Chip8 chip8;
 
-  chip8.keyboard[0] = 1;
+  chip8.setKeyState(0, true);
 
   chip8.setMemory(0x200, 0xE0);
   chip8.setMemory(0x201, 0xA1);
@@ -443,7 +448,7 @@ TEST(FX07, setDelayTimer) {
 TEST(FX0A, setRegisterX) {
   Chip8 chip8;
 
-  chip8.keyboard[8] = 1;
+  chip8.setKeyState(8, true);
 
   chip8.setMemory(0x200, 0xF0);
   chip8.setMemory(0x201, 0x0A);
