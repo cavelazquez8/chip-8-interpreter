@@ -48,7 +48,7 @@ TEST_F(IntegrationTest, CompleteRomExecution) {
         0x00, 0xE0,  // Clear screen
         0x60, 0x20,  // Set V0 = 32
         0x61, 0x10,  // Set V1 = 16
-        0xA2, 0x30,  // Set I = 0x230 (sprite location)
+        0xA2, 0x0C,  // Set I = 0x20C (sprite location)
         0xD0, 0x15,  // Draw sprite at (V0, V1) with height 5
         0x12, 0x08   // Jump to 0x208 (infinite loop)
     };
@@ -59,28 +59,24 @@ TEST_F(IntegrationTest, CompleteRomExecution) {
     
     createRom("test_integration.ch8", testRom);
     
-    auto loadResult = emulator.loadRom("test_integration.ch8");
-    ASSERT_TRUE(loadResult.has_value());
+    bool loadResult = emulator.loadRom("test_integration.ch8");
+    ASSERT_TRUE(loadResult);
     
     // Execute clear screen
     emulator.emulateCycle();
     EXPECT_TRUE(emulator.getDrawFlag());
-    emulator.clearDrawFlag();
+    emulator.setDrawFlag(false);
     
     // Execute register sets
     emulator.emulateCycle();
-    auto reg0 = emulator.getRegister(0);
-    ASSERT_TRUE(reg0.has_value());
-    EXPECT_EQ(reg0.value(), 32);
+    EXPECT_EQ(emulator.getRegisterAt(0), 32);
     
     emulator.emulateCycle();
-    auto reg1 = emulator.getRegister(1);
-    ASSERT_TRUE(reg1.has_value());
-    EXPECT_EQ(reg1.value(), 16);
+    EXPECT_EQ(emulator.getRegisterAt(1), 16);
     
     // Execute set index register
     emulator.emulateCycle();
-    EXPECT_EQ(emulator.getIndexRegister(), 0x230);
+    EXPECT_EQ(emulator.getIndexRegister(), 0x20C);
     
     // Execute draw instruction
     emulator.emulateCycle();
@@ -104,8 +100,8 @@ TEST_F(IntegrationTest, CompleteRomExecution) {
 }
 
 TEST_F(IntegrationTest, TimerDecrement) {
-    // Set delay timer and sound timer
-    ASSERT_TRUE(emulator.setDelayTimer(10).has_value());
+    // Set delay timer
+    emulator.setDelayTimer(10);
     // Note: Can't directly set sound timer in public interface
     
     // Run several cycles and verify timer decrements
@@ -125,8 +121,8 @@ TEST_F(IntegrationTest, KeyboardInputIntegration) {
     };
     
     createRom("key_test.ch8", keyTestRom);
-    auto loadResult = emulator.loadRom("key_test.ch8");
-    ASSERT_TRUE(loadResult.has_value());
+    bool loadResult = emulator.loadRom("key_test.ch8");
+    ASSERT_TRUE(loadResult);
     
     auto initialPC = emulator.getProgramCounter();
     
@@ -144,9 +140,7 @@ TEST_F(IntegrationTest, KeyboardInputIntegration) {
     
     // Should have advanced and stored key in V0
     EXPECT_EQ(emulator.getProgramCounter(), initialPC + 2);
-    auto reg0 = emulator.getRegister(0);
-    ASSERT_TRUE(reg0.has_value());
-    EXPECT_EQ(reg0.value(), 5);
+    EXPECT_EQ(emulator.getRegisterAt(0), 5);
 }
 
 TEST_F(IntegrationTest, SubroutineCallAndReturn) {
@@ -154,18 +148,18 @@ TEST_F(IntegrationTest, SubroutineCallAndReturn) {
     std::vector<std::uint8_t> subroutineRom = {
         0x22, 0x10,  // Call subroutine at 0x210
         0x60, 0xFF,  // Set V0 = 0xFF (should execute after return)
-        0x12, 0x06,  // Jump to self
-        // Padding to reach 0x210
+        0x12, 0x04,  // Jump to 0x204 (self)
+        // Padding to reach 0x210 (need 10 bytes: 0x206-0x20F)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00,
         // Subroutine at 0x210
         0x61, 0x42,  // Set V1 = 0x42
         0x00, 0xEE   // Return
     };
     
     createRom("subroutine_test.ch8", subroutineRom);
-    auto loadResult = emulator.loadRom("subroutine_test.ch8");
-    ASSERT_TRUE(loadResult.has_value());
+    bool loadResult = emulator.loadRom("subroutine_test.ch8");
+    ASSERT_TRUE(loadResult);
     
     // Execute call
     emulator.emulateCycle();
@@ -174,26 +168,22 @@ TEST_F(IntegrationTest, SubroutineCallAndReturn) {
     
     // Execute subroutine instruction
     emulator.emulateCycle();
-    auto reg1 = emulator.getRegister(1);
-    ASSERT_TRUE(reg1.has_value());
-    EXPECT_EQ(reg1.value(), 0x42);
+    EXPECT_EQ(emulator.getRegisterAt(1), 0x42);
     
     // Execute return
     emulator.emulateCycle();
-    EXPECT_EQ(emulator.getProgramCounter(), Chip8::ROM_START_ADDRESS + 4);
+    EXPECT_EQ(emulator.getProgramCounter(), Chip8::ROM_START_ADDRESS + 2);
     EXPECT_EQ(emulator.getStackPointer(), 0);
     
     // Execute next instruction after return
     emulator.emulateCycle();
-    auto reg0 = emulator.getRegister(0);
-    ASSERT_TRUE(reg0.has_value());
-    EXPECT_EQ(reg0.value(), 0xFF);
+    EXPECT_EQ(emulator.getRegisterAt(0), 0xFF);
 }
 
 TEST_F(IntegrationTest, SpriteCollisionDetection) {
     // Create ROM that draws overlapping sprites
     std::vector<std::uint8_t> collisionRom = {
-        0xA2, 0x30,  // Set I = 0x230 (sprite location)
+        0xA2, 0x0C,  // Set I = 0x20C (sprite location)
         0x60, 0x20,  // Set V0 = 32 (x position)
         0x61, 0x10,  // Set V1 = 16 (y position)
         0xD0, 0x15,  // Draw sprite at (V0, V1) height 5
@@ -206,23 +196,19 @@ TEST_F(IntegrationTest, SpriteCollisionDetection) {
     collisionRom.insert(collisionRom.end(), sprite.begin(), sprite.end());
     
     createRom("collision_test.ch8", collisionRom);
-    auto loadResult = emulator.loadRom("collision_test.ch8");
-    ASSERT_TRUE(loadResult.has_value());
+    bool loadResult = emulator.loadRom("collision_test.ch8");
+    ASSERT_TRUE(loadResult);
     
     // Execute setup
     runCycles(3);
     
     // First draw - no collision
     emulator.emulateCycle();
-    auto regF = emulator.getRegister(0xF);
-    ASSERT_TRUE(regF.has_value());
-    EXPECT_EQ(regF.value(), 0);
+    EXPECT_EQ(emulator.getRegisterAt(0xF), 0);
     
     // Second draw - collision detected
     emulator.emulateCycle();
-    regF = emulator.getRegister(0xF);
-    ASSERT_TRUE(regF.has_value());
-    EXPECT_EQ(regF.value(), 1);
+    EXPECT_EQ(emulator.getRegisterAt(0xF), 1);
     
     // Verify screen is cleared (XOR operation)
     auto frameBuffer = emulator.getFrameBuffer();
@@ -251,28 +237,20 @@ TEST_F(IntegrationTest, ArithmeticOperations) {
     };
     
     createRom("math_test.ch8", mathRom);
-    auto loadResult = emulator.loadRom("math_test.ch8");
-    ASSERT_TRUE(loadResult.has_value());
+    bool loadResult = emulator.loadRom("math_test.ch8");
+    ASSERT_TRUE(loadResult);
     
     runCycles(2); // Set V0 and V1
     
     emulator.emulateCycle(); // Add operation
-    auto reg0 = emulator.getRegister(0);
-    ASSERT_TRUE(reg0.has_value());
-    EXPECT_EQ(reg0.value(), 8);
+    EXPECT_EQ(emulator.getRegisterAt(0), 8);
     
     runCycles(2); // Set V2 and subtract
-    auto reg2 = emulator.getRegister(2);
-    ASSERT_TRUE(reg2.has_value());
-    EXPECT_EQ(reg2.value(), 2);
+    EXPECT_EQ(emulator.getRegisterAt(2), 2);
     
     runCycles(3); // Overflow test
-    auto reg3 = emulator.getRegister(3);
-    auto regF = emulator.getRegister(0xF);
-    ASSERT_TRUE(reg3.has_value());
-    ASSERT_TRUE(regF.has_value());
-    EXPECT_EQ(reg3.value(), 0);  // Wrapped around
-    EXPECT_EQ(regF.value(), 1);  // Carry flag set
+    EXPECT_EQ(emulator.getRegisterAt(3), 0);  // Wrapped around
+    EXPECT_EQ(emulator.getRegisterAt(0xF), 1);  // Carry flag set
 }
 
 TEST_F(IntegrationTest, MemoryOperations) {
@@ -291,52 +269,46 @@ TEST_F(IntegrationTest, MemoryOperations) {
     };
     
     createRom("memory_test.ch8", memoryRom);
-    auto loadResult = emulator.loadRom("memory_test.ch8");
-    ASSERT_TRUE(loadResult.has_value());
+    bool loadResult = emulator.loadRom("memory_test.ch8");
+    ASSERT_TRUE(loadResult);
     
     runCycles(5); // Setup and store
     
     // Verify memory was written
-    auto mem0 = emulator.getMemoryAt(0x300);
-    auto mem1 = emulator.getMemoryAt(0x301);
-    auto mem2 = emulator.getMemoryAt(0x302);
-    ASSERT_TRUE(mem0.has_value() && mem1.has_value() && mem2.has_value());
-    EXPECT_EQ(mem0.value(), 0x11);
-    EXPECT_EQ(mem1.value(), 0x22);
-    EXPECT_EQ(mem2.value(), 0x33);
+    EXPECT_EQ(emulator.getMemoryAt(0x300), 0x11);
+    EXPECT_EQ(emulator.getMemoryAt(0x301), 0x22);
+    EXPECT_EQ(emulator.getMemoryAt(0x302), 0x33);
     
     runCycles(4); // Clear registers and load
     
     // Verify registers were loaded
-    auto reg3 = emulator.getRegister(3);
-    auto reg4 = emulator.getRegister(4);
-    auto reg5 = emulator.getRegister(5);
-    ASSERT_TRUE(reg3.has_value() && reg4.has_value() && reg5.has_value());
-    EXPECT_EQ(reg3.value(), 0x11);
-    EXPECT_EQ(reg4.value(), 0x22);
-    EXPECT_EQ(reg5.value(), 0x33);
+    // V0-V2 should be loaded from stored values, V3-V5 from uninitialized memory (0)
+    EXPECT_EQ(emulator.getRegisterAt(0), 0x11); // Restored from memory
+    EXPECT_EQ(emulator.getRegisterAt(1), 0x22); // Restored from memory
+    EXPECT_EQ(emulator.getRegisterAt(2), 0x33); // Restored from memory
+    EXPECT_EQ(emulator.getRegisterAt(3), 0x00); // From uninitialized memory
+    EXPECT_EQ(emulator.getRegisterAt(4), 0x00); // From uninitialized memory
+    EXPECT_EQ(emulator.getRegisterAt(5), 0x00); // From uninitialized memory
 }
 
 TEST_F(IntegrationTest, LongRunningExecution) {
     // Test that emulator remains stable over many cycles
     std::vector<std::uint8_t> loopRom = {
         0x70, 0x01,  // V0 += 1
-        0x12, 0x00   // Jump to start
+        0x12, 0x00   // Jump to 0x200 (ROM_START_ADDRESS)
     };
     
     createRom("loop_test.ch8", loopRom);
-    auto loadResult = emulator.loadRom("loop_test.ch8");
-    ASSERT_TRUE(loadResult.has_value());
+    bool loadResult = emulator.loadRom("loop_test.ch8");
+    ASSERT_TRUE(loadResult);
     
     // Run many cycles
     for (int i = 0; i < 1000; ++i) {
         emulator.emulateCycle();
     }
     
-    // V0 should have wrapped around multiple times
-    auto reg0 = emulator.getRegister(0);
-    ASSERT_TRUE(reg0.has_value());
-    EXPECT_EQ(reg0.value(), 1000 % 256);
+    // V0 should have wrapped around multiple times (500 increments in 1000 cycles)
+    EXPECT_EQ(emulator.getRegisterAt(0), 500 % 256);
     
     // Emulator should still be in good state
     EXPECT_EQ(emulator.getProgramCounter(), Chip8::ROM_START_ADDRESS);
