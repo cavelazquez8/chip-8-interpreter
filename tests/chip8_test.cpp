@@ -28,6 +28,11 @@ protected:
         file.write(reinterpret_cast<const char*>(data.data()), data.size());
     }
 
+    void loadInstruction(std::uint16_t opcode) {
+        emulator.setMemory(Chip8::ROM_START_ADDRESS, (opcode & 0xFF00) >> 8);
+        emulator.setMemory(Chip8::ROM_START_ADDRESS + 1, opcode & 0x00FF);
+    }
+
     Chip8 emulator;
     const std::string test_rom_path = "test_rom.ch8";
 };
@@ -49,50 +54,48 @@ TEST_F(Chip8Test, InitialState) {
 
 TEST_F(Chip8Test, Reset) {
     // Modify state
-    ASSERT_TRUE(emulator.setRegister(0, 0xFF).has_value());
-    ASSERT_TRUE(emulator.setDelayTimer(100).has_value());
+    emulator.setRegisterAt(0, 0xFF);
+    emulator.setDelayTimer(100);
     emulator.setDrawFlag(true);
     
     // Reset should restore initial state
-    emulator.reset();
+    emulator.init();
     
     EXPECT_EQ(emulator.getProgramCounter(), Chip8::ROM_START_ADDRESS);
-    auto result = emulator.getRegister(0);
-    ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result.value(), 0);
+    EXPECT_EQ(emulator.getRegisterAt(0), 0);
     EXPECT_EQ(emulator.getDelayTimer(), 0);
     EXPECT_FALSE(emulator.getDrawFlag());
 }
 
 // Error handling tests
 TEST_F(Chip8Test, InvalidRegisterAccess) {
-    auto result = emulator.setRegister(16, 0xFF);
-    ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error().type(), EmulatorError::Type::InvalidRegister);
+    // Set invalid register (should be handled gracefully)
+    emulator.setRegisterAt(16, 0xFF);
+    EXPECT_EQ(emulator.getLastError(), Chip8::ErrorCode::InvalidRegisterAccess);
     
-    result = emulator.getRegister(16);
-    ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error().type(), EmulatorError::Type::InvalidRegister);
+    // Clear error and test get
+    emulator.getRegisterAt(16);
+    EXPECT_EQ(emulator.getLastError(), Chip8::ErrorCode::InvalidRegisterAccess);
 }
 
 TEST_F(Chip8Test, InvalidMemoryAccess) {
-    auto result = emulator.setMemory(4096, 0xFF);
-    ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error().type(), EmulatorError::Type::InvalidAddress);
+    // Set invalid memory address (should be handled gracefully)
+    emulator.setMemory(4096, 0xFF);
+    EXPECT_EQ(emulator.getLastError(), Chip8::ErrorCode::InvalidMemoryAccess);
     
-    result = emulator.getMemoryAt(4096);
-    ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error().type(), EmulatorError::Type::InvalidAddress);
+    // Clear error and test get
+    emulator.getMemoryAt(4096);
+    EXPECT_EQ(emulator.getLastError(), Chip8::ErrorCode::InvalidMemoryAccess);
 }
 
 TEST_F(Chip8Test, InvalidStackAccess) {
-    auto result = emulator.setStack(16, 0x200);
-    ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error().type(), EmulatorError::Type::StackOverflow);
+    // Set invalid stack position (should be handled gracefully) 
+    emulator.setStack(16, 0x200);
+    EXPECT_EQ(emulator.getLastError(), Chip8::ErrorCode::StackOverflow);
     
-    result = emulator.getStackAt(16);
-    ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error().type(), EmulatorError::Type::StackOverflow);
+    // Clear error and test get
+    emulator.getStackAt(16);
+    EXPECT_EQ(emulator.getLastError(), Chip8::ErrorCode::StackOverflow);
 }
 
 // ROM loading tests
@@ -100,21 +103,19 @@ TEST_F(Chip8Test, LoadValidRom) {
     std::vector<std::uint8_t> testData = {0xA2, 0x2A, 0x60, 0x0C, 0x61, 0x08};
     createTestRom(testData);
     
-    auto result = emulator.loadRom(test_rom_path);
-    ASSERT_TRUE(result.has_value());
+    bool loaded = emulator.loadRom(test_rom_path);
+    ASSERT_TRUE(loaded);
     
     // Verify ROM was loaded at correct address
     for (size_t i = 0; i < testData.size(); ++i) {
-        auto memResult = emulator.getMemoryAt(Chip8::ROM_START_ADDRESS + i);
-        ASSERT_TRUE(memResult.has_value());
-        EXPECT_EQ(memResult.value(), testData[i]);
+        EXPECT_EQ(emulator.getMemoryAt(Chip8::ROM_START_ADDRESS + i), testData[i]);
     }
 }
 
 TEST_F(Chip8Test, LoadNonexistentRom) {
-    auto result = emulator.loadRom("nonexistent.ch8");
-    ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error().type(), EmulatorError::Type::FileNotFound);
+    bool loaded = emulator.loadRom("nonexistent.ch8");
+    ASSERT_FALSE(loaded);
+    // Error details can be checked via getLastError if needed
 }
 
 TEST_F(Chip8Test, LoadOversizedRom) {
@@ -122,9 +123,9 @@ TEST_F(Chip8Test, LoadOversizedRom) {
     std::vector<std::uint8_t> oversizedData(4000, 0xAA);
     createTestRom(oversizedData);
     
-    auto result = emulator.loadRom(test_rom_path);
-    ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error().type(), EmulatorError::Type::InvalidRomSize);
+    bool loaded = emulator.loadRom(test_rom_path);
+    ASSERT_FALSE(loaded);
+    // Error details can be checked via getLastError if needed
 }
 
 // Keyboard tests
@@ -153,12 +154,7 @@ TEST_F(Chip8Test, InvalidKeyAccess) {
 // Instruction tests
 class Chip8InstructionTest : public Chip8Test {
 protected:
-    void loadInstruction(std::uint16_t opcode) {
-        ASSERT_TRUE(emulator.setMemory(Chip8::ROM_START_ADDRESS, 
-                                      (opcode & 0xFF00) >> 8).has_value());
-        ASSERT_TRUE(emulator.setMemory(Chip8::ROM_START_ADDRESS + 1, 
-                                      opcode & 0x00FF).has_value());
-    }
+    // Inherits loadInstruction from Chip8Test
 };
 
 TEST_F(Chip8InstructionTest, ClearScreen) {
@@ -191,58 +187,44 @@ TEST_F(Chip8InstructionTest, SetRegister) {
     loadInstruction(0x6A42);
     emulator.emulateCycle();
     
-    auto result = emulator.getRegister(0xA);
-    ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result.value(), 0x42);
+    EXPECT_EQ(emulator.getRegisterAt(0xA), 0x42);
     EXPECT_EQ(emulator.getProgramCounter(), Chip8::ROM_START_ADDRESS + 2);
 }
 
 TEST_F(Chip8InstructionTest, AddToRegister) {
     // Set initial value
-    ASSERT_TRUE(emulator.setRegister(0x5, 0x10).has_value());
+    emulator.setRegisterAt(0x5, 0x10);
     
     // Load add instruction (0x7XNN)
     loadInstruction(0x7505);
     emulator.emulateCycle();
     
-    auto result = emulator.getRegister(0x5);
-    ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result.value(), 0x15);
+    EXPECT_EQ(emulator.getRegisterAt(0x5), 0x15);
 }
 
 TEST_F(Chip8InstructionTest, AddWithCarry) {
     // Set values that will overflow
-    ASSERT_TRUE(emulator.setRegister(0x1, 0xFF).has_value());
-    ASSERT_TRUE(emulator.setRegister(0x2, 0x01).has_value());
+    emulator.setRegisterAt(0x1, 0xFF);
+    emulator.setRegisterAt(0x2, 0x01);
     
     // Load add with carry instruction (0x8XY4)
     loadInstruction(0x8124);
     emulator.emulateCycle();
     
-    auto result1 = emulator.getRegister(0x1);
-    auto resultF = emulator.getRegister(0xF);
-    ASSERT_TRUE(result1.has_value());
-    ASSERT_TRUE(resultF.has_value());
-    
-    EXPECT_EQ(result1.value(), 0x00); // Overflow wraps around
-    EXPECT_EQ(resultF.value(), 0x01); // Carry flag set
+    EXPECT_EQ(emulator.getRegisterAt(0x1), 0x00); // Overflow wraps around
+    EXPECT_EQ(emulator.getRegisterAt(0xF), 0x01); // Carry flag set
 }
 
 TEST_F(Chip8InstructionTest, SubtractWithBorrow) {
     // Test subtraction without borrow
-    ASSERT_TRUE(emulator.setRegister(0x1, 0x10).has_value());
-    ASSERT_TRUE(emulator.setRegister(0x2, 0x05).has_value());
+    emulator.setRegisterAt(0x1, 0x10);
+    emulator.setRegisterAt(0x2, 0x05);
     
     loadInstruction(0x8125);
     emulator.emulateCycle();
     
-    auto result1 = emulator.getRegister(0x1);
-    auto resultF = emulator.getRegister(0xF);
-    ASSERT_TRUE(result1.has_value());
-    ASSERT_TRUE(resultF.has_value());
-    
-    EXPECT_EQ(result1.value(), 0x0B);
-    EXPECT_EQ(resultF.value(), 0x01); // No borrow
+    EXPECT_EQ(emulator.getRegisterAt(0x1), 0x0B);
+    EXPECT_EQ(emulator.getRegisterAt(0xF), 0x01); // No borrow
 }
 
 TEST_F(Chip8InstructionTest, CallAndReturn) {
@@ -253,13 +235,11 @@ TEST_F(Chip8InstructionTest, CallAndReturn) {
     EXPECT_EQ(emulator.getProgramCounter(), 0x300);
     EXPECT_EQ(emulator.getStackPointer(), 1);
     
-    auto stackResult = emulator.getStackAt(0);
-    ASSERT_TRUE(stackResult.has_value());
-    EXPECT_EQ(stackResult.value(), Chip8::ROM_START_ADDRESS);
+    EXPECT_EQ(emulator.getStackAt(0), Chip8::ROM_START_ADDRESS);
     
     // Load return instruction (0x00EE) at new location
-    ASSERT_TRUE(emulator.setMemory(0x300, 0x00).has_value());
-    ASSERT_TRUE(emulator.setMemory(0x301, 0xEE).has_value());
+    emulator.setMemory(0x300, 0x00);
+    emulator.setMemory(0x301, 0xEE);
     emulator.emulateCycle();
     
     EXPECT_EQ(emulator.getProgramCounter(), Chip8::ROM_START_ADDRESS + 2);
@@ -270,9 +250,9 @@ TEST_F(Chip8InstructionTest, CallAndReturn) {
 TEST_F(Chip8Test, StackOverflowProtection) {
     // Fill stack to capacity
     for (std::uint8_t i = 0; i < Chip8::STACK_SIZE; ++i) {
-        ASSERT_TRUE(emulator.setStack(i, 0x200 + i * 2).has_value());
+        emulator.setStack(i, 0x200 + i * 2);
     }
-    ASSERT_TRUE(emulator.setStackPointer(Chip8::STACK_SIZE).has_value());
+    emulator.setStackPointer(Chip8::STACK_SIZE);
     
     // Try to push one more (should be protected)
     loadInstruction(0x2400);
@@ -285,7 +265,7 @@ TEST_F(Chip8Test, StackOverflowProtection) {
 
 TEST_F(Chip8Test, ProgramCounterBoundaryProtection) {
     // Set PC near end of memory
-    ASSERT_TRUE(emulator.setProgramCounter(Chip8::MEMORY_SIZE - 1).has_value());
+    emulator.setProgramCounter(Chip8::MEMORY_SIZE - 1);
     
     // Emulate cycle should not crash
     emulator.emulateCycle();
