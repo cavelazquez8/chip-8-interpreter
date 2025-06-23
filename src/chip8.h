@@ -55,7 +55,7 @@ public:
   void setDrawFlag(bool condition);
   void setIndexRegister(std::uint16_t value);
   // Getters
-  std::uint8_t getMemoryAt(std::uint8_t address) const;
+  std::uint8_t getMemoryAt(std::uint16_t address) const;
   std::uint16_t getIndexRegister() const;
   std::uint16_t getProgramCounter() const;
   std::uint16_t getStackAt(std::uint8_t subroutine) const;

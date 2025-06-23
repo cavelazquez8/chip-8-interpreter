@@ -6,7 +6,16 @@
 #include <fstream>
 #include <ios>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <vector>
+
+// Helper function to format hex addresses
+std::string formatHex(std::uint16_t value) {
+  std::stringstream ss;
+  ss << "0x" << std::hex << std::uppercase << value;
+  return ss.str();
+}
 
 constexpr std::array<std::uint8_t, Chip8::FONT_SET_SIZE> FONT_SET = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -173,9 +182,10 @@ bool Chip8::isKeyPressed(std::uint8_t key) const {
 void Chip8::setMemory(std::uint16_t address, std::uint8_t value) {
   if (!isValidMemoryAddress(address)) {
     setError(ErrorCode::InvalidMemoryAccess, 
-             "Invalid memory address: " + std::to_string(address));
+             "Invalid memory address: " + formatHex(address));
     return;
   }
+  clearError(); // Clear error on successful operation
   memory_[address] = value;
 }
 
@@ -194,15 +204,17 @@ void Chip8::setStack(std::uint8_t subroutine, std::uint16_t address) {
              "Stack index out of bounds: " + std::to_string(subroutine));
     return;
   }
+  clearError(); // Clear error on successful operation
   stack_[subroutine] = address;
 }
 
 void Chip8::setStackPointer(std::uint8_t subroutine) {
-  if (subroutine >= STACK_SIZE) {
+  if (subroutine > STACK_SIZE) {
     setError(ErrorCode::StackOverflow, 
              "Stack pointer out of bounds: " + std::to_string(subroutine));
     return;
   }
+  clearError(); // Clear error on successful operation
   stackPointer_ = subroutine;
 }
 
@@ -212,6 +224,7 @@ void Chip8::setRegisterAt(std::uint8_t reg, std::uint8_t value) {
              "Invalid register index: " + std::to_string(reg));
     return;
   }
+  clearError(); // Clear error on successful operation
   registers_[reg] = value;
 }
 
@@ -228,7 +241,7 @@ void Chip8::setIndexRegister(std::uint16_t value) {
 }
 
 // Getters (updated with bounds checking)
-std::uint8_t Chip8::getMemoryAt(std::uint8_t address) const {
+std::uint8_t Chip8::getMemoryAt(std::uint16_t address) const {
   if (!isValidMemoryAddress(address)) {
     return 0;
   }
@@ -322,13 +335,15 @@ void Chip8::handleOpcode2xxx() {
   // 0x2NNN - Call subroutine at NNN
   if (stackPointer_ >= STACK_SIZE) {
     setError(ErrorCode::StackOverflow, "Stack overflow on subroutine call");
+    programCounter_ += 2; // Advance PC even on error to prevent infinite loop
     return;
   }
   
   std::uint16_t address = opcode_ & 0x0FFF;
   if (!isValidMemoryAddress(address)) {
     setError(ErrorCode::InvalidMemoryAccess, 
-             "Invalid call address: " + std::to_string(address));
+             "Invalid call address: " + formatHex(address));
+    programCounter_ += 2; // Advance PC even on error to prevent infinite loop
     return;
   }
   
