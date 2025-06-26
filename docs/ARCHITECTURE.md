@@ -33,12 +33,12 @@ chip-8-interpreter/
 
 ### Design Principles
 
-1. **Modern C++20**: Leverages latest language features for safety and performance
-2. **Error Handling**: Uses `std::expected` for monadic error handling without exceptions
-3. **Memory Safety**: Comprehensive bounds checking and RAII patterns
-4. **Performance**: Zero-copy operations and minimal allocations
-5. **Testability**: Clean interfaces with dependency injection for testing
-6. **Maintainability**: Clear separation of concerns and comprehensive documentation
+1. **Modern C++**: Uses current C++ standards for safety and performance
+2. **Error Handling**: Simple error code system without exceptions
+3. **Memory Safety**: Basic bounds checking and RAII patterns
+4. **Performance**: Straightforward implementation focused on correctness
+5. **Testability**: Clean interfaces for unit testing
+6. **Maintainability**: Clear separation of concerns and documentation
 
 ### Memory Layout
 
@@ -53,11 +53,10 @@ The CHIP-8 virtual machine uses a simple memory model:
 ### Class Hierarchy
 
 ```cpp
-namespace chip8 {
-    class EmulatorError;           // Error representation
-    template<T> using Result;      // Monadic error handling
-    class Chip8;                   // Main emulator class
-}
+class Chip8 {                      // Main emulator class
+    enum class ErrorCode;          // Error representation
+    // ... implementation
+};
 ```
 
 ## Core Components
@@ -84,22 +83,22 @@ The `Chip8` class encapsulates the complete virtual machine state:
 
 #### Error Types
 ```cpp
-enum class EmulatorError::Type {
-    InvalidRomSize,     // ROM validation errors
-    FileNotFound,       // File system errors  
-    InvalidAddress,     // Memory access errors
-    InvalidRegister,    // Register access errors
-    StackOverflow,      // Stack operation errors
-    StackUnderflow
+enum class Chip8::ErrorCode {
+    None = 0,
+    StackOverflow,          // Stack operation errors
+    StackUnderflow,
+    InvalidMemoryAccess,    // Memory access errors
+    InvalidRegisterAccess,  // Register access errors
+    UnknownOpcode          // Unrecognized instruction
 };
 ```
 
-#### Monadic Error Handling
-Uses `std::expected<T, EmulatorError>` to provide:
-- **No exceptions**: Better performance in hot paths
-- **Composable**: Chain operations with `and_then()`
-- **Type safety**: Compile-time error handling verification
-- **Zero overhead**: No runtime cost when no errors occur
+#### Simple Error Handling
+Uses basic error codes to provide:
+- **No exceptions**: Simple error checking without performance overhead
+- **Clear errors**: Specific error types for different failure modes
+- **Error messages**: Human-readable error descriptions
+- **Simple checking**: Basic conditional error handling
 
 ### 3. Frontend Application (`main.cpp`)
 
@@ -129,34 +128,29 @@ SDL2-based application providing:
 
 ### CMake Configuration
 
-Modern CMake 3.20+ with:
+Modern CMake 3.14+ with:
 - **Target-based**: Clean dependency management
 - **Feature Detection**: Automatic dependency resolution
-- **Configuration Options**: Build type, testing, coverage, sanitizers
-- **Installation**: Full package configuration
+- **Configuration Options**: Build type, testing, coverage
+- **Installation**: Package configuration
 - **Cross-platform**: Windows, macOS, Linux support
 
 ### Build Targets
 
 ```cmake
-# Libraries
-chip8_core          # Core emulator (static)
-chip8_imgui         # ImGui integration (static)
-
 # Executables  
 chip8               # Main application
-chip8_tests         # Test suite
+chip8_tests         # Test suite (if enabled)
 
 # Utilities
-coverage            # Generate coverage reports
 uninstall          # Remove installed files
 ```
 
 ### Dependencies
 
-- **Required**: SDL2, OpenGL, CMake 3.20+
-- **Optional**: lcov (coverage), clang-tidy (analysis)
-- **Automatic**: GoogleTest (testing), pkg-config (packaging)
+- **Required**: SDL2, OpenGL, CMake 3.14+
+- **Optional**: lcov (coverage), cppcheck (analysis)
+- **Automatic**: GoogleTest (testing)
 
 ## Instruction Implementation
 

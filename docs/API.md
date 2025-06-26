@@ -2,11 +2,11 @@
 
 ## Overview
 
-This document describes the public API of the CHIP-8 interpreter library. The library provides a modern C++20 interface for emulating CHIP-8 programs with comprehensive error handling and memory safety.
+This document describes the public API of the CHIP-8 interpreter. The library provides a straightforward C++ interface for emulating CHIP-8 programs with basic error handling.
 
 ## Core Classes
 
-### `chip8::Chip8`
+### `Chip8`
 
 The main emulator class that provides a complete CHIP-8 virtual machine implementation.
 
@@ -14,35 +14,30 @@ The main emulator class that provides a complete CHIP-8 virtual machine implemen
 
 ```cpp
 static constexpr std::uint16_t MEMORY_SIZE = 4096;
-static constexpr std::uint16_t ROM_START_ADDRESS = 0x200;
+static constexpr std::uint16_t REGISTER_COUNT = 16;
+static constexpr std::uint16_t STACK_SIZE = 16;
 static constexpr std::uint16_t DISPLAY_WIDTH = 64;
 static constexpr std::uint16_t DISPLAY_HEIGHT = 32;
-static constexpr std::uint8_t NUM_REGISTERS = 16;
-static constexpr std::uint8_t NUM_KEYS = 16;
-static constexpr std::uint8_t STACK_SIZE = 16;
+static constexpr std::uint16_t DISPLAY_SIZE = DISPLAY_WIDTH * DISPLAY_HEIGHT;
+static constexpr std::uint16_t KEYBOARD_SIZE = 16;
+static constexpr std::uint16_t ROM_START_ADDRESS = 0x200;
+static constexpr std::uint16_t FONT_SET_SIZE = 80;
 ```
 
-#### Constructor/Destructor
+#### Constructor
 
 ```cpp
 Chip8();                                    // Initialize emulator
-~Chip8() = default;                        // Default destructor
-
-// Move semantics supported, copy disabled
-Chip8(Chip8&&) = default;
-Chip8& operator=(Chip8&&) = default;
-Chip8(const Chip8&) = delete;
-Chip8& operator=(const Chip8&) = delete;
 ```
 
 #### Core Operations
 
 ```cpp
-// Reset emulator to initial state
-void reset();
+// Initialize emulator to default state
+void init();
 
 // Load ROM from file
-[[nodiscard]] Result<void> loadRom(std::string_view path);
+bool loadRom(const std::string &path);
 
 // Execute one instruction cycle
 void emulateCycle();
@@ -52,94 +47,85 @@ void emulateCycle();
 
 ```cpp
 // Get read-only access to frame buffer
-[[nodiscard]] std::span<const std::uint8_t> getFrameBuffer() const noexcept;
+const std::array<std::uint8_t, DISPLAY_SIZE>& getFrameBuffer() const;
+
+// Set/get individual pixel values
+void setPixel(std::uint16_t x, std::uint16_t y, std::uint8_t value);
+std::uint8_t getPixel(std::uint16_t x, std::uint16_t y) const;
 
 // Check if screen needs redrawing
-[[nodiscard]] bool shouldDraw() const noexcept;
+bool getDrawFlag() const;
 
-// Clear the draw flag after rendering
-void clearDrawFlag() noexcept;
+// Set draw flag state
+void setDrawFlag(bool condition);
 ```
 
 #### Input Operations
 
 ```cpp
 // Check if a key is currently pressed
-[[nodiscard]] bool isKeyPressed(std::uint8_t key) const;
+bool isKeyPressed(std::uint8_t key) const;
 
 // Set key state (pressed/released)
 void setKeyState(std::uint8_t key, bool pressed);
 ```
 
-#### Timer Operations
-
-```cpp
-// Get current timer values
-[[nodiscard]] std::uint8_t getDelayTimer() const noexcept;
-[[nodiscard]] std::uint8_t getSoundTimer() const noexcept;
-```
-
-#### Testing Interface
-
-*Note: These methods are primarily intended for testing and debugging.*
+#### State Access
 
 ```cpp
 // Memory operations
-[[nodiscard]] Result<void> setMemory(std::uint16_t address, std::uint8_t value);
-[[nodiscard]] Result<std::uint8_t> getMemoryAt(std::uint16_t address) const;
+void setMemory(std::uint16_t address, std::uint8_t value);
+std::uint8_t getMemoryAt(std::uint16_t address) const;
 
 // Register operations
-[[nodiscard]] Result<void> setRegister(std::uint8_t reg, std::uint8_t value);
-[[nodiscard]] Result<std::uint8_t> getRegister(std::uint8_t reg) const;
+void setRegisterAt(std::uint8_t reg, std::uint8_t value);
+std::uint8_t getRegisterAt(std::uint8_t reg) const;
 
 // Program counter operations
-[[nodiscard]] Result<void> setProgramCounter(std::uint16_t address);
-[[nodiscard]] std::uint16_t getProgramCounter() const noexcept;
+void setProgramCounter(std::uint16_t address);
+std::uint16_t getProgramCounter() const;
 
 // Index register operations
-[[nodiscard]] Result<void> setIndexRegister(std::uint16_t value);
-[[nodiscard]] std::uint16_t getIndexRegister() const noexcept;
+void setIndexRegister(std::uint16_t value);
+std::uint16_t getIndexRegister() const;
 
 // Stack operations
-[[nodiscard]] Result<void> setStack(std::uint8_t level, std::uint16_t address);
-[[nodiscard]] Result<std::uint16_t> getStackAt(std::uint8_t level) const;
-[[nodiscard]] Result<void> setStackPointer(std::uint8_t pointer);
-[[nodiscard]] std::uint8_t getStackPointer() const noexcept;
+void setStack(std::uint8_t subroutine, std::uint16_t address);
+std::uint16_t getStackAt(std::uint8_t subroutine) const;
+void setStackPointer(std::uint8_t subroutine);
+std::uint8_t getStackPointer() const;
 
 // Timer operations
-[[nodiscard]] Result<void> setDelayTimer(std::uint8_t value);
-void setDrawFlag(bool flag) noexcept;
+void setDelayTimer(std::uint8_t value);
+std::uint8_t getDelayTimer() const;
+std::uint8_t getSoundTimer() const;
 ```
 
 ### Error Handling
 
-#### `chip8::EmulatorError`
+#### `Chip8::ErrorCode`
 
 Represents errors that can occur during emulation.
 
 ```cpp
-enum class Type {
-    InvalidRomSize,     // ROM file is too large or empty
-    FileNotFound,       // ROM file cannot be opened
-    InvalidAddress,     // Memory address out of bounds
-    InvalidRegister,    // Register index out of bounds
-    StackOverflow,      // Stack operation would overflow
-    StackUnderflow      // Stack operation would underflow
+enum class ErrorCode {
+    None = 0,
+    StackOverflow,          // Stack operation would overflow
+    StackUnderflow,         // Stack operation would underflow
+    InvalidMemoryAccess,    // Memory address out of bounds
+    InvalidRegisterAccess,  // Register index out of bounds
+    UnknownOpcode          // Unrecognized instruction
 };
-
-EmulatorError(Type type, std::string message);
-
-[[nodiscard]] Type type() const noexcept;
-[[nodiscard]] const std::string& message() const noexcept;
 ```
 
-#### `chip8::Result<T>`
-
-Type alias for `std::expected<T, EmulatorError>` providing monadic error handling.
+#### Error Methods
 
 ```cpp
-template<typename T>
-using Result = std::expected<T, EmulatorError>;
+// Get the last error that occurred
+ErrorCode getLastError() const;
+
+// Get human-readable error message
+const std::string& getLastErrorMessage() const;
 ```
 
 ## Usage Examples
@@ -149,14 +135,16 @@ using Result = std::expected<T, EmulatorError>;
 ```cpp
 #include "chip8.h"
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 int main() {
-    chip8::Chip8 emulator;
+    Chip8 emulator;
+    emulator.init();
     
     // Load ROM
-    auto result = emulator.loadRom("game.ch8");
-    if (!result) {
-        std::cerr << "Failed to load ROM: " << result.error().message() << std::endl;
+    if (!emulator.loadRom("game.ch8")) {
+        std::cerr << "Failed to load ROM: " << emulator.getLastErrorMessage() << std::endl;
         return 1;
     }
     
@@ -164,11 +152,11 @@ int main() {
     while (true) {
         emulator.emulateCycle();
         
-        if (emulator.shouldDraw()) {
+        if (emulator.getDrawFlag()) {
             auto frameBuffer = emulator.getFrameBuffer();
             // Render frameBuffer to screen
             renderDisplay(frameBuffer);
-            emulator.clearDrawFlag();
+            emulator.setDrawFlag(false);
         }
         
         // Handle input
@@ -180,31 +168,23 @@ int main() {
 }
 ```
 
-### Error Handling with Monadic Operations
+### Error Handling
 
 ```cpp
-auto setupEmulator = [](const std::string& romPath) -> chip8::Result<chip8::Chip8> {
-    chip8::Chip8 emulator;
+void safeEmulationStep(Chip8& emulator) {
+    emulator.emulateCycle();
     
-    return emulator.loadRom(romPath)
-        .and_then([&](auto) { return emulator.setRegister(0, 42); })
-        .and_then([&](auto) { return emulator.setDelayTimer(60); })
-        .transform([&](auto) { return std::move(emulator); });
-};
-
-auto result = setupEmulator("test.ch8");
-if (result) {
-    auto emulator = std::move(result.value());
-    // Use emulator
-} else {
-    std::cerr << "Setup failed: " << result.error().message() << std::endl;
+    if (emulator.getLastError() != Chip8::ErrorCode::None) {
+        std::cerr << "Emulation error: " << emulator.getLastErrorMessage() << std::endl;
+        // Handle error appropriately
+    }
 }
 ```
 
 ### Key Mapping
 
 ```cpp
-void handleKeyEvent(chip8::Chip8& emulator, int sdlKey, bool pressed) {
+void handleKeyEvent(Chip8& emulator, int sdlKey, bool pressed) {
     static const std::unordered_map<int, std::uint8_t> keyMap = {
         {SDLK_1, 0x1}, {SDLK_2, 0x2}, {SDLK_3, 0x3}, {SDLK_4, 0xC},
         {SDLK_q, 0x4}, {SDLK_w, 0x5}, {SDLK_e, 0x6}, {SDLK_r, 0xD},
@@ -225,10 +205,10 @@ The `Chip8` class is **not thread-safe**. If you need to access the emulator fro
 
 ## Performance Considerations
 
-- The emulator is designed for high performance with minimal allocations
-- Frame buffer access returns a `std::span` for zero-copy access
-- Error handling uses `std::expected` to avoid exceptions in hot paths
-- Memory operations include bounds checking but are optimized for common cases
+- The emulator is designed for straightforward implementation
+- Frame buffer access returns a reference to the internal array
+- Error handling uses simple error codes to avoid exceptions
+- Memory operations include basic bounds checking
 
 ## CHIP-8 Instruction Set
 
