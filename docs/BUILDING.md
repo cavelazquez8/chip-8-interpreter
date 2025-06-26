@@ -6,17 +6,16 @@ This guide covers building, testing, and installing the CHIP-8 interpreter from 
 
 ### Required Dependencies
 
-- **CMake 3.20+**: Build system
-- **C++20 Compiler**: GCC 10+, Clang 11+, or MSVC 2019+
+- **CMake 3.14+**: Build system
+- **C++17 Compiler**: GCC 7+, Clang 5+, or MSVC 2017+
 - **SDL2**: Graphics and input handling
 - **OpenGL**: Hardware-accelerated rendering
 
 ### Optional Dependencies
 
 - **lcov**: Code coverage reports
-- **clang-tidy**: Static analysis
-- **clang-format**: Code formatting
-- **pkg-config**: Dependency management
+- **cppcheck**: Static analysis
+- **GoogleTest**: Unit testing framework (automatically downloaded)
 
 ## Platform-Specific Setup
 
@@ -35,9 +34,7 @@ sudo apt install -y \
 # Optional packages for development
 sudo apt install -y \
     lcov \
-    clang-tidy \
-    clang-format \
-    doxygen
+    cppcheck
 ```
 
 ### macOS
@@ -50,7 +47,7 @@ sudo apt install -y \
 brew install cmake sdl2 pkg-config
 
 # Optional development tools
-brew install lcov llvm doxygen
+brew install lcov
 ```
 
 ### Windows
@@ -115,17 +112,8 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 # Debug build with symbols
 cmake .. -DCMAKE_BUILD_TYPE=Debug
 
-# Disable tests
-cmake .. -DCHIP8_BUILD_TESTS=OFF
-
 # Enable coverage reporting
-cmake .. -DCHIP8_ENABLE_COVERAGE=ON
-
-# Enable sanitizers
-cmake .. -DCHIP8_ENABLE_SANITIZERS=ON
-
-# Enable static analysis
-cmake .. -DCHIP8_ENABLE_STATIC_ANALYSIS=ON
+cmake .. -DENABLE_COVERAGE=ON
 ```
 
 ## Advanced Build Options
@@ -138,7 +126,7 @@ cd build-coverage
 
 cmake .. \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DCHIP8_ENABLE_COVERAGE=ON
+    -DENABLE_COVERAGE=ON
 
 cmake --build .
 ctest --output-on-failure
@@ -152,35 +140,14 @@ ninja coverage
 open coverage_html/index.html
 ```
 
-### Sanitizer Build
-
-```bash
-mkdir build-sanitized
-cd build-sanitized
-
-cmake .. \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCHIP8_ENABLE_SANITIZERS=ON
-
-cmake --build .
-
-# Run with sanitizers
-./src/chip8 ../roms/maze.ch8
-```
-
 ### Static Analysis
 
 ```bash
-# Configure with analysis tools
-cmake .. \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-    -DCHIP8_ENABLE_STATIC_ANALYSIS=ON
+# Run static analysis
+cppcheck --std=c++17 src/
 
-# Run analysis script
+# Run with analysis script if available
 ../scripts/static_analysis.sh
-
-# Format code
-../scripts/format_code.sh
 ```
 
 ## Testing
@@ -206,8 +173,8 @@ ctest -R performance_test
 
 ### Test Categories
 
-- **Unit Tests**: Core functionality
-- **Integration Tests**: Full emulation scenarios
+- **Unit Tests**: Core functionality and opcodes
+- **Integration Tests**: Full emulation scenarios  
 - **Error Handling Tests**: Error condition coverage
 - **Performance Tests**: Benchmark critical paths
 
@@ -397,11 +364,8 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 #### CMake Version Too Old
 
 ```bash
-# Ubuntu: Install from Kitware APT repository
-wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | sudo apt-key add -
-sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
-sudo apt update
-sudo apt install cmake
+# Ubuntu: Install from Kitware APT repository or snap
+sudo snap install cmake --classic
 
 # macOS
 brew install cmake
@@ -416,14 +380,14 @@ cd cmake-3.25.0
 #### Compiler Errors
 
 ```bash
-# Ensure C++20 support
-g++ --version  # Should be 10.0+
-clang++ --version  # Should be 11.0+
+# Ensure C++17 support
+g++ --version  # Should be 7.0+
+clang++ --version  # Should be 5.0+
 
 # Update compiler if needed
-sudo apt install gcc-11 g++-11
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
-sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+sudo apt install gcc-9 g++-9
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
 ```
 
 #### Test Failures
@@ -455,7 +419,5 @@ perf report
 
 ### Getting Help
 
-- Check the [troubleshooting guide](TROUBLESHOOTING.md)
 - Review the [architecture documentation](ARCHITECTURE.md)
 - File an issue on the project repository
-- Join the community discussion forum
