@@ -16,8 +16,14 @@ set(IMGUI_SOURCES
   imgui/imgui_impl_sdl2.cpp
   imgui/imgui_impl_opengl3.cpp
 )
-add_executable(chip8 main.cpp chip8.cpp ${IMGUI_SOURCES})
+# Create a library for the core chip8 functionality
+add_library(chip8_core STATIC chip8.cpp)
+target_include_directories(chip8_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Create the main executable
+add_executable(chip8 main.cpp ${IMGUI_SOURCES})
 target_include_directories(chip8 PRIVATE imgui)  # Include the IMGUI headers
+target_link_libraries(chip8 chip8_core)
 #target_link_libraries(chip8 ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES})
 target_link_libraries(chip8 ${SDL2_LIBRARIES})
 target_link_libraries(chip8 ${OPENGL_LIBRARIES})

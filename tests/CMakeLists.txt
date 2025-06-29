@@ -21,7 +21,6 @@ set(test-sources
   error_handling_test.cpp
   integration_test.cpp
   performance_test.cpp
-  ../src/chip8.cpp
   )
 add_executable(
   tests
@@ -29,6 +28,7 @@ add_executable(
 )
 target_link_libraries(
   tests
+  chip8_core
   GTest::gtest_main
   GTest::gmock_main
 )
