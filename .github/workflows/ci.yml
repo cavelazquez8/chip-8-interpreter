@@ -43,8 +43,8 @@ jobs:
         run: |
           cd build
           lcov --capture --directory . --output-file coverage.info --ignore-errors mismatch
-          lcov --remove coverage.info '/usr/*' '*/googletest/*' -o coverage.info --ignore-errors unused
-          genhtml coverage.info --output-directory coverage_html
+          lcov --remove coverage.info '/usr/*' '*/googletest/*' '*/tests/*' -o coverage_filtered.info --ignore-errors unused
+          genhtml coverage_filtered.info --output-directory coverage_html
 
       - name: Upload coverage artifact
         if: ${{ success() }}
