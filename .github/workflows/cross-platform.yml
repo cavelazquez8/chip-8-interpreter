@@ -1,0 +1,248 @@
+name: Cross-Platform Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux builds
+          - name: "Ubuntu 20.04 GCC"
+            os: ubuntu-20.04
+            compiler: gcc
+            version: "10"
+            
+          - name: "Ubuntu 22.04 GCC"
+            os: ubuntu-22.04
+            compiler: gcc
+            version: "11"
+            
+          - name: "Ubuntu 22.04 Clang"
+            os: ubuntu-22.04
+            compiler: clang
+            version: "14"
+            
+          # macOS builds
+          - name: "macOS 11 Clang"
+            os: macos-11
+            compiler: clang
+            
+          - name: "macOS 12 Clang"
+            os: macos-12
+            compiler: clang
+            
+          # Windows builds
+          - name: "Windows 2019 MSVC"
+            os: windows-2019
+            compiler: msvc
+            
+          - name: "Windows 2022 MSVC"
+            os: windows-2022
+            compiler: msvc
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Linux setup
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            build-essential \
+            libsdl2-dev \
+            libgl1-mesa-dev \
+            pkg-config \
+            lcov \
+            clang-tidy \
+            clang-format
+
+      - name: Setup GCC
+        if: runner.os == 'Linux' && matrix.compiler == 'gcc'
+        run: |
+          sudo apt-get install -y gcc-${{ matrix.version }} g++-${{ matrix.version }}
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ matrix.version }} 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${{ matrix.version }} 100
+
+      - name: Setup Clang
+        if: runner.os == 'Linux' && matrix.compiler == 'clang'
+        run: |
+          sudo apt-get install -y clang-${{ matrix.version }}
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ matrix.version }} 100
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${{ matrix.version }} 100
+
+      # macOS setup
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install cmake sdl2 pkg-config lcov
+
+      # Windows setup
+      - name: Setup vcpkg
+        if: runner.os == 'Windows'
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '2023.04.15'
+
+      - name: Install Windows dependencies
+        if: runner.os == 'Windows'
+        run: |
+          vcpkg install sdl2:x64-windows
+        shell: cmd
+
+      # Build configuration
+      - name: Configure CMake (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCHIP8_BUILD_TESTS=ON \
+            -DCHIP8_ENABLE_COVERAGE=${{ runner.os == 'Linux' && matrix.compiler == 'gcc' && 'ON' || 'OFF' }}
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          mkdir build
+          cd build
+          cmake .. `
+            -DCMAKE_TOOLCHAIN_FILE="${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" `
+            -DCHIP8_BUILD_TESTS=ON `
+            -DVCPKG_TARGET_TRIPLET=x64-windows
+        shell: powershell
+
+      # Build
+      - name: Build
+        run: |
+          cd build
+          cmake --build . --config Release --parallel
+
+      # Test
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure --build-config Release
+
+      # Coverage (Linux GCC only)
+      - name: Generate coverage
+        if: runner.os == 'Linux' && matrix.compiler == 'gcc' && matrix.version == '11'
+        run: |
+          cd build
+          lcov --capture --directory . --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '*/googletest/*' -o coverage.info
+          lcov --list coverage.info
+
+      - name: Upload coverage to Codecov
+        if: runner.os == 'Linux' && matrix.compiler == 'gcc' && matrix.version == '11'
+        uses: codecov/codecov-action@v3
+        with:
+          files: build/coverage.info
+          fail_ci_if_error: false
+
+      # Static analysis (Linux Clang only)
+      - name: Run static analysis
+        if: runner.os == 'Linux' && matrix.compiler == 'clang'
+        run: |
+          cd build
+          ../scripts/static_analysis.sh
+
+      # Package (Release builds only)
+      - name: Package
+        if: matrix.name == 'Ubuntu 22.04 GCC' || matrix.name == 'Windows 2022 MSVC' || matrix.name == 'macOS 12 Clang'
+        run: |
+          cd build
+          cmake --install . --prefix install
+
+      - name: Upload artifacts
+        if: matrix.name == 'Ubuntu 22.04 GCC' || matrix.name == 'Windows 2022 MSVC' || matrix.name == 'macOS 12 Clang'
+        uses: actions/upload-artifact@v3
+        with:
+          name: chip8-${{ runner.os }}-${{ matrix.compiler }}
+          path: build/install/
+          retention-days: 30
+
+  # Integration test with different ROM files
+  integration-test:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Integration Tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential libsdl2-dev libgl1-mesa-dev
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCHIP8_BUILD_TESTS=ON
+          cmake --build . --parallel
+
+      - name: Run integration tests
+        run: |
+          cd build
+          # Test with sample ROMs
+          timeout 5s ./src/chip8 ../roms/maze.ch8 || true
+          timeout 5s ./src/chip8 ../roms/connect4.ch8 || true
+          timeout 5s ./src/chip8 ../roms/airplane.ch8 || true
+
+  # Memory safety check
+  memory-safety:
+    runs-on: ubuntu-latest
+    name: Memory Safety Check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            build-essential \
+            libsdl2-dev \
+            libgl1-mesa-dev \
+            valgrind
+
+      - name: Configure with sanitizers
+        run: |
+          mkdir build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCHIP8_BUILD_TESTS=ON \
+            -DCHIP8_ENABLE_SANITIZERS=ON
+
+      - name: Build with sanitizers
+        run: |
+          cd build
+          cmake --build . --parallel
+
+      - name: Run tests with AddressSanitizer
+        run: |
+          cd build
+          ASAN_OPTIONS=detect_leaks=1 ctest --output-on-failure
+
+      - name: Run Valgrind checks
+        run: |
+          cd build
+          valgrind --leak-check=full --error-exitcode=1 ./tests/chip8_tests

@@ -17,6 +17,10 @@ enable_testing()
 
 set(test-sources
   opcodes_test.cpp
+  chip8_test.cpp
+  error_handling_test.cpp
+  integration_test.cpp
+  performance_test.cpp
   ../src/chip8.cpp
   )
 add_executable(
@@ -26,6 +30,7 @@ add_executable(
 target_link_libraries(
   tests
   GTest::gtest_main
+  GTest::gmock_main
 )
 
 include(GoogleTest)
