@@ -42,8 +42,8 @@ jobs:
         if: ${{ success() }}
         run: |
           cd build
-          lcov --capture --directory . --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' '*/googletest/*' -o coverage.info
+          lcov --capture --directory . --output-file coverage.info --ignore-errors mismatch
+          lcov --remove coverage.info '/usr/*' '*/googletest/*' '*/imgui/*' -o coverage.info
           genhtml coverage.info --output-directory coverage_html
 
       - name: Upload coverage artifact
