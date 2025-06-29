@@ -43,7 +43,7 @@ jobs:
         run: |
           cd build
           lcov --capture --directory . --output-file coverage.info --ignore-errors mismatch
-          lcov --remove coverage.info '/usr/*' '*/googletest/*' '*/imgui/*' -o coverage.info
+          lcov --remove coverage.info '/usr/*' '*/googletest/*' -o coverage.info --ignore-errors unused
           genhtml coverage.info --output-directory coverage_html
 
       - name: Upload coverage artifact
