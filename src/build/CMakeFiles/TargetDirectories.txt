@@ -1,3 +1,0 @@
-/home/cavelazquez8/dev/projects/chip-8-interpreter/src/build/CMakeFiles/chip8.dir
-/home/cavelazquez8/dev/projects/chip-8-interpreter/src/build/CMakeFiles/edit_cache.dir
-/home/cavelazquez8/dev/projects/chip-8-interpreter/src/build/CMakeFiles/rebuild_cache.dir
