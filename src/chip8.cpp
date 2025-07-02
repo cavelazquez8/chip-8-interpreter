@@ -264,9 +264,9 @@ void Chip8::setDrawFlag(bool condition) { drawFlag_ = condition; }
 void Chip8::setIndexRegister(std::uint16_t value) { indexRegister_ = value; }
 
 // Getters (updated with bounds checking)
-std::uint8_t Chip8::getMemoryAt(std::uint16_t address) const {
+std::optional<std::uint8_t> Chip8::getMemoryAt(std::uint16_t address) const {
     if (!isValidMemoryAddress(address)) {
-        return 0;
+        return std::nullopt;
     }
     return memory_[address];
 }
@@ -275,18 +275,18 @@ std::uint16_t Chip8::getIndexRegister() const { return indexRegister_; }
 
 std::uint16_t Chip8::getProgramCounter() const { return programCounter_; }
 
-std::uint16_t Chip8::getStackAt(std::uint8_t subroutine) const {
+std::optional<std::uint16_t> Chip8::getStackAt(std::uint8_t subroutine) const {
     if (subroutine >= STACK_SIZE) {
-        return 0;
+        return std::nullopt;
     }
     return stack_[subroutine];
 }
 
 std::uint8_t Chip8::getStackPointer() const { return stackPointer_; }
 
-std::uint8_t Chip8::getRegisterAt(std::uint8_t reg) const {
+std::optional<std::uint8_t> Chip8::getRegisterAt(std::uint8_t reg) const {
     if (!isValidRegisterIndex(reg)) {
-        return 0;
+        return std::nullopt;
     }
     return registers_[reg];
 }
@@ -296,6 +296,18 @@ std::uint8_t Chip8::getDelayTimer() const { return delayTimer_; }
 std::uint8_t Chip8::getSoundTimer() const { return soundTimer_; }
 
 bool Chip8::getDrawFlag() const { return drawFlag_; }
+
+std::span<const std::uint8_t> Chip8::getFrameBufferSpan() const {
+    return std::span<const std::uint8_t>(frameBuffer_);
+}
+
+std::span<const std::uint8_t> Chip8::getMemorySpan() const {
+    return std::span<const std::uint8_t>(memory_);
+}
+
+std::span<const std::uint8_t> Chip8::getRegistersSpan() const {
+    return std::span<const std::uint8_t>(registers_);
+}
 
 // Error handling methods
 Chip8::ErrorCode Chip8::getLastError() const { return lastError_; }

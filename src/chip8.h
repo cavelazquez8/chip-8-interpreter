@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include <span>
+#include <optional>
 
 class Chip8 {
   public:
@@ -26,6 +28,7 @@ class Chip8 {
 
     // Frame buffer access
     const std::array<std::uint8_t, DISPLAY_SIZE>& getFrameBuffer() const;
+    std::span<const std::uint8_t> getFrameBufferSpan() const;
     void setPixel(std::uint16_t x, std::uint16_t y, std::uint8_t value);
     std::uint8_t getPixel(std::uint16_t x, std::uint16_t y) const;
 
@@ -55,15 +58,19 @@ class Chip8 {
     void setDrawFlag(bool condition);
     void setIndexRegister(std::uint16_t value);
     // Getters
-    std::uint8_t getMemoryAt(std::uint16_t address) const;
+    std::optional<std::uint8_t> getMemoryAt(std::uint16_t address) const;
     std::uint16_t getIndexRegister() const;
     std::uint16_t getProgramCounter() const;
-    std::uint16_t getStackAt(std::uint8_t subroutine) const;
+    std::optional<std::uint16_t> getStackAt(std::uint8_t subroutine) const;
     std::uint8_t getStackPointer() const;
-    std::uint8_t getRegisterAt(std::uint8_t reg) const;
+    std::optional<std::uint8_t> getRegisterAt(std::uint8_t reg) const;
     std::uint8_t getDelayTimer() const;
     std::uint8_t getSoundTimer() const;
     bool getDrawFlag() const;
+    
+    // Memory access with span
+    std::span<const std::uint8_t> getMemorySpan() const;
+    std::span<const std::uint8_t> getRegistersSpan() const;
 
   private:
     // Core emulator state
