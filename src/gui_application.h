@@ -46,6 +46,14 @@ private:
     bool show_settings_dialog_ = false;
     bool show_file_browser_ = false;
     
+    // OpenGL resources
+    unsigned int display_texture_ = 0;
+    
+    // Error dialog state
+    bool show_error_dialog_ = false;
+    std::string error_title_;
+    std::string error_message_;
+    
     // Performance tracking
     float fps_ = 0.0f;
     float frame_time_ = 0.0f;
@@ -85,6 +93,7 @@ private:
     void renderAboutDialog();
     void renderSettingsDialog();
     void renderFileLoadDialog();
+    void renderErrorDialog();
     
     // Emulator control
     void loadROM(const std::string& path);

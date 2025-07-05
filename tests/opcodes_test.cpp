@@ -347,9 +347,10 @@ TEST(CXNNTest, Valid) {
 
     chip8.emulateCycle();
 
-    std::uint8_t Vx = chip8.getRegisterAt(0);
-    EXPECT_GE(Vx, 0);
-    EXPECT_LE(Vx, 0xFF);
+    auto Vx = chip8.getRegisterAt(0);
+    ASSERT_TRUE(Vx.has_value());
+    EXPECT_GE(*Vx, 0);
+    EXPECT_LE(*Vx, 0xFF);
 }
 TEST(DXYN, DrawFont0) {
     Chip8 chip8;

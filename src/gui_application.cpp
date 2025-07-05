@@ -226,6 +226,7 @@ void GuiApplication::render() {
     if (show_about_dialog_) renderAboutDialog();
     if (show_settings_dialog_) renderSettingsDialog();
     if (show_file_browser_) renderFileLoadDialog();
+    if (show_error_dialog_) renderErrorDialog();
     
     // Rendering
     ImGui::Render();
@@ -317,9 +318,7 @@ void GuiApplication::renderMenuBar() {
 
 void GuiApplication::renderToolbar() {
     ImGui::Begin("Toolbar", nullptr, 
-                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | 
-                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | 
-                 ImGuiWindowFlags_NoCollapse);
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar);
     
     if (ImGui::Button("Load ROM")) {
         show_file_browser_ = true;
@@ -354,9 +353,8 @@ void GuiApplication::renderEmulatorDisplay() {
         const auto& frame_buffer = emulator_->getFrameBuffer();
         
         // Create texture for display
-        static GLuint display_texture = 0;
-        if (display_texture == 0) {
-            glGenTextures(1, &display_texture);
+        if (display_texture_ == 0) {
+            glGenTextures(1, &display_texture_);
         }
         
         // Convert frame buffer to RGBA
@@ -365,7 +363,7 @@ void GuiApplication::renderEmulatorDisplay() {
             pixels[i] = frame_buffer[i] ? 0xFFFFFFFF : 0xFF000000;
         }
         
-        glBindTexture(GL_TEXTURE_2D, display_texture);
+        glBindTexture(GL_TEXTURE_2D, display_texture_);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Chip8::DISPLAY_WIDTH, Chip8::DISPLAY_HEIGHT, 
                      0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -373,7 +371,7 @@ void GuiApplication::renderEmulatorDisplay() {
         
         ImVec2 display_size(Chip8::DISPLAY_WIDTH * display_scale_, 
                            Chip8::DISPLAY_HEIGHT * display_scale_);
-        ImGui::Image(reinterpret_cast<void*>(display_texture), display_size);
+        ImGui::Image(reinterpret_cast<void*>(display_texture_), display_size);
     } else {
         ImGui::Text("No ROM loaded");
         if (ImGui::Button("Load ROM...")) {
@@ -534,29 +532,32 @@ void GuiApplication::renderPerformancePanel() {
 }
 
 void GuiApplication::renderStatusBar() {
-    if (ImGui::BeginMainMenuBar()) {
-        // Status bar is typically at the bottom
-        ImGui::EndMainMenuBar();
-    }
-    
-    // Create a status bar window
+    // Create a status bar window at the bottom
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | 
-                                   ImGuiWindowFlags_MenuBar;
+                                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | 
+                                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
+    
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImVec2 work_pos = viewport->WorkPos;
+    ImVec2 work_size = viewport->WorkSize;
+    
+    ImGui::SetNextWindowPos(ImVec2(work_pos.x, work_pos.y + work_size.y - 30));
+    ImGui::SetNextWindowSize(ImVec2(work_size.x, 30));
     
     if (ImGui::Begin("StatusBar", nullptr, window_flags)) {
-        if (ImGui::BeginMenuBar()) {
-            ImGui::Text("FPS: %.0f", fps_);
-            ImGui::Separator();
-            
-            if (emulator_running_) {
-                ImGui::Text("ROM: %s", current_rom_path_.empty() ? "Unknown" : current_rom_path_.c_str());
-                ImGui::Separator();
-                ImGui::Text("PC: 0x%04X", emulator_->getProgramCounter());
-            } else {
-                ImGui::Text("No ROM loaded");
-            }
-            
-            ImGui::EndMenuBar();
+        ImGui::Text("FPS: %.0f", fps_);
+        ImGui::SameLine();
+        ImGui::Text("|");
+        ImGui::SameLine();
+        
+        if (emulator_running_) {
+            ImGui::Text("ROM: %s", current_rom_path_.empty() ? "Unknown" : current_rom_path_.c_str());
+            ImGui::SameLine();
+            ImGui::Text("|");
+            ImGui::SameLine();
+            ImGui::Text("PC: 0x%04X", emulator_->getProgramCounter());
+        } else {
+            ImGui::Text("No ROM loaded");
         }
     }
     ImGui::End();
@@ -624,6 +625,22 @@ void GuiApplication::renderFileLoadDialog() {
     ImGui::End();
 }
 
+void GuiApplication::renderErrorDialog() {
+    ImGui::OpenPopup("Error");
+    
+    if (ImGui::BeginPopupModal("Error", &show_error_dialog_, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("%s", error_title_.c_str());
+        ImGui::Separator();
+        ImGui::TextWrapped("%s", error_message_.c_str());
+        
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+            show_error_dialog_ = false;
+        }
+        
+        ImGui::EndPopup();
+    }
+}
+
 void GuiApplication::loadROM(const std::string& path) {
     if (emulator_->loadRom(path)) {
         current_rom_path_ = path;
@@ -681,7 +698,11 @@ void GuiApplication::saveRecentFiles() {
 }
 
 void GuiApplication::showErrorDialog(const std::string& title, const std::string& message) {
-    // For now, just print to console - could implement a proper error dialog
+    error_title_ = title;
+    error_message_ = message;
+    show_error_dialog_ = true;
+    
+    // Also log to console for debugging
     std::cerr << title << ": " << message << std::endl;
 }
 
@@ -700,6 +721,12 @@ std::string GuiApplication::formatTime(float seconds) {
 
 void GuiApplication::shutdown() {
     saveRecentFiles();
+    
+    // Clean up OpenGL resources
+    if (display_texture_ != 0) {
+        glDeleteTextures(1, &display_texture_);
+        display_texture_ = 0;
+    }
     
     if (gl_context_) {
         ImGui_ImplOpenGL3_Shutdown();
