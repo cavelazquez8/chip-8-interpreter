@@ -180,21 +180,10 @@ void GuiApplication::update() {
     float delta_time = static_cast<float>(current_time - last_time) / SDL_GetPerformanceFrequency();
     last_time = current_time;
     
-    // Update FPS (avoid division by zero and extreme values)
-    if (delta_time > 0.0f && delta_time < 1.0f) {
-        fps_ = 1.0f / delta_time;
-        frame_time_ = delta_time * 1000.0f;
-        
-        // Only update history if FPS is reasonable (between 1 and 10000)
-        if (fps_ >= 1.0f && fps_ <= 10000.0f) {
-            fps_history_.push_back(fps_);
-            if (fps_history_.size() > 100) {
-                fps_history_.erase(fps_history_.begin());
-            }
-        }
-    }
+    // Update emulator and track cycles executed
+    static int cycles_executed = 0;
+    static float fps_accumulator = 0.0f;
     
-    // Update emulator
     if (emulator_running_ && !emulator_paused_) {
         static float accumulator = 0.0f;
         accumulator += delta_time * emulation_speed_;
@@ -204,7 +193,25 @@ void GuiApplication::update() {
         while (accumulator >= target_cycle_time) {
             emulator_->emulateCycle();
             accumulator -= target_cycle_time;
+            cycles_executed++;
         }
+    }
+    
+    // Update FPS based on actual cycles executed
+    fps_accumulator += delta_time;
+    if (fps_accumulator >= 1.0f) { // Update FPS every second
+        fps_ = static_cast<float>(cycles_executed);
+        frame_time_ = fps_accumulator * 1000.0f;
+        
+        // Update history
+        fps_history_.push_back(fps_);
+        if (fps_history_.size() > 100) {
+            fps_history_.erase(fps_history_.begin());
+        }
+        
+        // Reset counters
+        cycles_executed = 0;
+        fps_accumulator = 0.0f;
     }
 }
 
