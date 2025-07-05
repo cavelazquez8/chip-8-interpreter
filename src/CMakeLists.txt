@@ -27,7 +27,6 @@ target_include_directories(chip8_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(chip8 main_gui.cpp gui_application.cpp disassembler.cpp ${IMGUI_SOURCES})
 target_include_directories(chip8 PRIVATE imgui)  # Include the IMGUI headers
 target_link_libraries(chip8 chip8_core)
-#target_link_libraries(chip8 ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES})
 target_link_libraries(chip8 ${SDL2_LIBRARIES})
 target_link_libraries(chip8 ${OPENGL_LIBRARIES})
 
