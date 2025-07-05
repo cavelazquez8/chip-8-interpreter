@@ -37,17 +37,20 @@ private:
     std::string current_rom_path_;
     
     // GUI State
-    bool show_memory_viewer_ = true;
-    bool show_registers_ = true;
-    bool show_stack_viewer_ = true;
-    bool show_disassembler_ = true;
-    bool show_performance_ = true;
+    bool show_memory_viewer_ = false;
+    bool show_registers_ = false;
+    bool show_stack_viewer_ = false;
+    bool show_disassembler_ = false;
+    bool show_performance_ = false;
     bool show_about_dialog_ = false;
     bool show_settings_dialog_ = false;
     bool show_file_browser_ = false;
     
     // OpenGL resources
     unsigned int display_texture_ = 0;
+    
+    // Docking
+    unsigned int main_dockspace_id_ = 0;
     
     // Error dialog state
     bool show_error_dialog_ = false;

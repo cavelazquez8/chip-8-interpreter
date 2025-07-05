@@ -180,12 +180,18 @@ void GuiApplication::update() {
     float delta_time = static_cast<float>(current_time - last_time) / SDL_GetPerformanceFrequency();
     last_time = current_time;
     
-    // Update FPS
-    fps_ = 1.0f / delta_time;
-    frame_time_ = delta_time * 1000.0f;
-    fps_history_.push_back(fps_);
-    if (fps_history_.size() > 100) {
-        fps_history_.erase(fps_history_.begin());
+    // Update FPS (avoid division by zero and extreme values)
+    if (delta_time > 0.0f && delta_time < 1.0f) {
+        fps_ = 1.0f / delta_time;
+        frame_time_ = delta_time * 1000.0f;
+        
+        // Only update history if FPS is reasonable (between 1 and 10000)
+        if (fps_ >= 1.0f && fps_ <= 10000.0f) {
+            fps_history_.push_back(fps_);
+            if (fps_history_.size() > 100) {
+                fps_history_.erase(fps_history_.begin());
+            }
+        }
     }
     
     // Update emulator
@@ -209,10 +215,9 @@ void GuiApplication::render() {
     
     // Enable docking
     ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImGui::DockSpaceOverViewport(0, viewport);
+    main_dockspace_id_ = ImGui::DockSpaceOverViewport(0, viewport);
     
     renderMenuBar();
-    renderToolbar();
     renderEmulatorDisplay();
     
     if (show_memory_viewer_) renderMemoryViewer();
@@ -317,8 +322,15 @@ void GuiApplication::renderMenuBar() {
 }
 
 void GuiApplication::renderToolbar() {
-    ImGui::Begin("Toolbar", nullptr, 
-                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar);
+    // Position toolbar at the bottom, docked to main dockspace
+    static bool first_time = true;
+    if (first_time) {
+        first_time = false;
+        ImGui::SetNextWindowDockID(main_dockspace_id_);
+    }
+    
+    ImGui::Begin("Control Panel", nullptr, 
+                 ImGuiWindowFlags_NoScrollbar);
     
     if (ImGui::Button("Load ROM")) {
         show_file_browser_ = true;
@@ -347,6 +359,13 @@ void GuiApplication::renderToolbar() {
 }
 
 void GuiApplication::renderEmulatorDisplay() {
+    // Set dock ID to force docking to main dockspace
+    static bool first_time = true;
+    if (first_time) {
+        first_time = false;
+        ImGui::SetNextWindowDockID(main_dockspace_id_);
+    }
+    
     ImGui::Begin("Emulator Display");
     
     if (emulator_running_) {
@@ -383,6 +402,13 @@ void GuiApplication::renderEmulatorDisplay() {
 }
 
 void GuiApplication::renderMemoryViewer() {
+    // Dock to main dockspace as tab on first show, but allow undocking
+    static bool first_time = true;
+    if (first_time) {
+        first_time = false;
+        ImGui::SetNextWindowDockID(main_dockspace_id_);
+    }
+    
     ImGui::Begin("Memory Viewer", &show_memory_viewer_);
     
     if (emulator_running_) {
@@ -417,6 +443,13 @@ void GuiApplication::renderMemoryViewer() {
 }
 
 void GuiApplication::renderRegistersPanel() {
+    // Dock to main dockspace as tab on first show, but allow undocking
+    static bool first_time = true;
+    if (first_time) {
+        first_time = false;
+        ImGui::SetNextWindowDockID(main_dockspace_id_);
+    }
+    
     ImGui::Begin("Registers", &show_registers_);
     
     if (emulator_running_) {
@@ -446,6 +479,13 @@ void GuiApplication::renderRegistersPanel() {
 }
 
 void GuiApplication::renderStackViewer() {
+    // Dock to main dockspace as tab on first show, but allow undocking
+    static bool first_time = true;
+    if (first_time) {
+        first_time = false;
+        ImGui::SetNextWindowDockID(main_dockspace_id_);
+    }
+    
     ImGui::Begin("Stack Viewer", &show_stack_viewer_);
     
     if (emulator_running_) {
@@ -473,6 +513,13 @@ void GuiApplication::renderStackViewer() {
 }
 
 void GuiApplication::renderDisassembler() {
+    // Dock to main dockspace as tab on first show, but allow undocking
+    static bool first_time = true;
+    if (first_time) {
+        first_time = false;
+        ImGui::SetNextWindowDockID(main_dockspace_id_);
+    }
+    
     ImGui::Begin("Disassembler", &show_disassembler_);
     
     if (emulator_running_) {
@@ -510,6 +557,13 @@ void GuiApplication::renderDisassembler() {
 }
 
 void GuiApplication::renderPerformancePanel() {
+    // Dock to main dockspace as tab on first show, but allow undocking
+    static bool first_time = true;
+    if (first_time) {
+        first_time = false;
+        ImGui::SetNextWindowDockID(main_dockspace_id_);
+    }
+    
     ImGui::Begin("Performance", &show_performance_);
     
     ImGui::Text("FPS: %.1f (%.2f ms)", fps_, frame_time_);
