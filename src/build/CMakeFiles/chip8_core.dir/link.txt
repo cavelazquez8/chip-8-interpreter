@@ -1,0 +1,2 @@
+/usr/bin/ar qc libchip8_core.a CMakeFiles/chip8_core.dir/chip8.cpp.o
+/usr/bin/ranlib libchip8_core.a
