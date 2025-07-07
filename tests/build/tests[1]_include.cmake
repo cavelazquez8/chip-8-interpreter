@@ -1,5 +1,0 @@
-if(EXISTS "/home/cavelazquez8/dev/projects/chip-8-interpreter/tests/build/tests[1]_tests.cmake")
-  include("/home/cavelazquez8/dev/projects/chip-8-interpreter/tests/build/tests[1]_tests.cmake")
-else()
-  add_test(tests_NOT_BUILT tests_NOT_BUILT)
-endif()
