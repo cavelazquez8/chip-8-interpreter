@@ -2,7 +2,6 @@
 #include <cstdlib>
 
 #include "gui_application.h"
-#include "version.h"
 
 int main(int argc, char* argv[]) {
     std::cout << "CHIP-8 Interpreter 1.2.0" << std::endl;
